@@ -1,0 +1,11 @@
+{
+  "source": "plan.md「2. 主役」「8. 合成データ」をもとに期間前に作った架空の人物。実在の道場生ではない",
+  "students": [
+    { "slug": "takuya", "name": "たくや", "grade": "小4", "kyu": 10, "guardianName": "お母さん", "main": true },
+    { "slug": "sakura", "name": "さくら", "grade": "小2", "kyu": 10 },
+    { "slug": "ren", "name": "れん", "grade": "小5", "kyu": 6 },
+    { "slug": "hinata", "name": "ひなた", "grade": "中1", "kyu": 4 },
+    { "slug": "sou", "name": "そう", "grade": "小3", "kyu": 9 },
+    { "slug": "aoi", "name": "あおい", "grade": "小6", "kyu": 5 }
+  ]
+}
