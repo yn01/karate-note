@@ -1,5 +1,5 @@
 {
-  "id": "c4a285a3-3554-434b-8c3d-1a66c15891cd",
+  "id": "6bf6be2e-0864-4caf-bd7f-24535571bc5e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -181,7 +181,12 @@
         }
       },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "coach_reviews_approved_has_final": {
+          "name": "coach_reviews_approved_has_final",
+          "value": "\"coach_reviews\".\"status\" <> 'approved' OR (\"coach_reviews\".\"final\" IS NOT NULL AND \"coach_reviews\".\"approved_at\" IS NOT NULL)"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.criteria_checks": {
@@ -348,7 +353,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "development_plans_student_id_unique": {
+          "name": "development_plans_student_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "student_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -394,7 +407,29 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "milestones_plan_order": {
+          "name": "milestones_plan_order",
+          "columns": [
+            {
+              "expression": "plan_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "milestones_plan_id_development_plans_id_fk": {
           "name": "milestones_plan_id_development_plans_id_fk",
@@ -654,6 +689,13 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true
+        },
+        "honorific": {
+          "name": "honorific",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'さん'"
         },
         "guardian_name": {
           "name": "guardian_name",

@@ -27,7 +27,8 @@ CREATE TABLE "coach_reviews" (
 	"status" "review_status" DEFAULT 'draft' NOT NULL,
 	"approved_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "coach_reviews_note_id_unique" UNIQUE("note_id")
+	CONSTRAINT "coach_reviews_note_id_unique" UNIQUE("note_id"),
+	CONSTRAINT "coach_reviews_approved_has_final" CHECK ("coach_reviews"."status" <> 'approved' OR ("coach_reviews"."final" IS NOT NULL AND "coach_reviews"."approved_at" IS NOT NULL))
 );
 --> statement-breakpoint
 CREATE TABLE "criteria_checks" (
@@ -47,7 +48,8 @@ CREATE TABLE "development_plans" (
 	"guardian_wish" text,
 	"focus" text,
 	"strengths" jsonb NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "development_plans_student_id_unique" UNIQUE("student_id")
 );
 --> statement-breakpoint
 CREATE TABLE "milestones" (
@@ -94,6 +96,7 @@ CREATE TABLE "students" (
 	"name" text NOT NULL,
 	"grade" text NOT NULL,
 	"belt_id" integer NOT NULL,
+	"honorific" text DEFAULT 'さん' NOT NULL,
 	"guardian_name" text,
 	CONSTRAINT "students_slug_unique" UNIQUE("slug")
 );
@@ -118,4 +121,5 @@ ALTER TABLE "question_sessions" ADD CONSTRAINT "question_sessions_note_id_notes_
 ALTER TABLE "students" ADD CONSTRAINT "students_belt_id_belts_id_fk" FOREIGN KEY ("belt_id") REFERENCES "public"."belts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "theme_selections" ADD CONSTRAINT "theme_selections_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "theme_selections" ADD CONSTRAINT "theme_selections_review_id_coach_reviews_id_fk" FOREIGN KEY ("review_id") REFERENCES "public"."coach_reviews"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX "criteria_checks_student_kata_point" ON "criteria_checks" USING btree ("student_id","kata","point_key");
+CREATE UNIQUE INDEX "criteria_checks_student_kata_point" ON "criteria_checks" USING btree ("student_id","kata","point_key");--> statement-breakpoint
+CREATE UNIQUE INDEX "milestones_plan_order" ON "milestones" USING btree ("plan_id","order");

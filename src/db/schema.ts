@@ -1,7 +1,9 @@
 // 空手ノートのテーブル定義（plan.md「6. データ設計」）
 // 道場生・保護者の画面には、指導者が承認した（status = 'approved'）ものだけを出す。
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   date,
   integer,
   jsonb,
@@ -47,6 +49,7 @@ export const students = pgTable("students", {
   beltId: integer("belt_id")
     .notNull()
     .references(() => belts.id),
+  honorific: text("honorific").notNull().default("さん"), // 呼び方（くん・さん）
   guardianName: text("guardian_name"),
 });
 
@@ -55,6 +58,7 @@ export const developmentPlans = pgTable("development_plans", {
   id: serial("id").primaryKey(),
   studentId: integer("student_id")
     .notNull()
+    .unique() // 育成計画は1人に1つ
     .references(() => students.id, { onDelete: "cascade" }),
   selfGoals: jsonb("self_goals").$type<string[]>().notNull(),
   guardianWish: text("guardian_wish"),
@@ -63,7 +67,9 @@ export const developmentPlans = pgTable("development_plans", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const milestones = pgTable("milestones", {
+export const milestones = pgTable(
+  "milestones",
+  {
   id: serial("id").primaryKey(),
   planId: integer("plan_id")
     .notNull()
@@ -72,7 +78,9 @@ export const milestones = pgTable("milestones", {
   dueLabel: text("due_label").notNull(),
   dueDate: date("due_date").notNull(),
   description: text("description").notNull(),
-});
+  },
+  (t) => [uniqueIndex("milestones_plan_order").on(t.planId, t.order)],
+);
 
 // 到達基準のチェック（指導者が付ける。Claude は判定しない）
 export const criteriaChecks = pgTable(
@@ -142,6 +150,8 @@ export const questionSessions = pgTable("question_sessions", {
 });
 
 // 指導者の確認（下書き → 点検 → 指導者が直して承認）
+// ルール：道場生・保護者向けの問い合わせは src/lib/queries/ に置き、status = 'approved' で絞り、
+// final から下の View 型の項目だけを取り出す（draft・checkResult・criteriaMatch は渡さない）。
 export type ReviewContent = {
   summary?: string;
   praise?: string[];
@@ -158,11 +168,18 @@ export type ReviewContent = {
     model?: string;
   };
 };
+// 保護者に渡してよいもの（到達基準の状態＝点数は含めない）
+export type GuardianView = Pick<ReviewContent, "guardianLetter" | "homePractice" | "safety">;
+// 道場生に渡してよいもの
+export type StudentView = Pick<ReviewContent, "themeCandidates">;
+
 export type CheckResult = {
   ok: boolean;
   issues: { kind: string; message: string; suggestion?: string }[];
 };
-export const coachReviews = pgTable("coach_reviews", {
+export const coachReviews = pgTable(
+  "coach_reviews",
+  {
   id: serial("id").primaryKey(),
   noteId: integer("note_id")
     .notNull()
@@ -174,7 +191,15 @@ export const coachReviews = pgTable("coach_reviews", {
   status: reviewStatusEnum("status").notNull().default("draft"),
   approvedAt: timestamp("approved_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+  },
+  (t) => [
+    // 承認済みなら、直した後の内容と承認日時が必ずある
+    check(
+      "coach_reviews_approved_has_final",
+      sql`${t.status} <> 'approved' OR (${t.final} IS NOT NULL AND ${t.approvedAt} IS NOT NULL)`,
+    ),
+  ],
+);
 
 // テーマの選択（承認済みの候補から選ぶ、または自分の言葉で書き直す）
 export const themeSelections = pgTable("theme_selections", {

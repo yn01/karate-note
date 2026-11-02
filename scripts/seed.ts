@@ -1,7 +1,9 @@
 // 合成データ（data/seed/*.json）を DB に入れる。何度流しても同じ結果になる。
 // 使い方：npm run db:seed（.env.local の DATABASE_URL を使う）
+// neon-http はトランザクションを使えないため、途中で失敗したら直してもう一度流す（最初に全部消すので元に戻る）
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { sql } from "drizzle-orm";
 import { createDb } from "../src/db/client";
 import {
   belts,
@@ -35,7 +37,14 @@ type BeltsJson = {
   goal: { name: string };
 };
 type StudentsJson = {
-  students: { slug: string; name: string; grade: string; kyu: number; guardianName?: string }[];
+  students: {
+    slug: string;
+    name: string;
+    grade: string;
+    kyu: number;
+    honorific?: string;
+    guardianName?: string;
+  }[];
 };
 type PlanJson = {
   studentSlug: string;
@@ -78,17 +87,10 @@ type ThemesJson = {
 async function main() {
   const db = createDb();
 
-  // 依存の逆順で消す
-  await db.delete(themeSelections);
-  await db.delete(coachReviews);
-  await db.delete(questionSessions);
-  await db.delete(notes);
-  await db.delete(oneOnOnes);
-  await db.delete(criteriaChecks);
-  await db.delete(milestones);
-  await db.delete(developmentPlans);
-  await db.delete(students);
-  await db.delete(belts);
+  // 全テーブルを空にし、id も 1 から振り直す（何度流しても同じ id になる）
+  await db.execute(
+    sql`TRUNCATE ${themeSelections}, ${coachReviews}, ${questionSessions}, ${notes}, ${oneOnOnes}, ${criteriaChecks}, ${milestones}, ${developmentPlans}, ${students}, ${belts} RESTART IDENTITY CASCADE`,
+  );
 
   // 帯：白帯（無級）→ 10級〜1級 → 黒帯（初段）
   const beltsJson = load<BeltsJson>("belts.json");
@@ -132,7 +134,14 @@ async function main() {
       studentsJson.students.map((s) => {
         const beltId = beltIdByKyu.get(s.kyu);
         if (!beltId) throw new Error(`${s.kyu}級の帯が belts.json にありません`);
-        return { slug: s.slug, name: s.name, grade: s.grade, beltId, guardianName: s.guardianName ?? null };
+        return {
+          slug: s.slug,
+          name: s.name,
+          grade: s.grade,
+          beltId,
+          honorific: s.honorific ?? "さん",
+          guardianName: s.guardianName ?? null,
+        };
       }),
     )
     .returning();
