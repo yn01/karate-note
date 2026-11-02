@@ -1,0 +1,18 @@
+{
+  "source": "一般的な昇級の流れを参考にした架空の科目表（期間前に作成した資料をもとに入力）。流派名は出さない",
+  "examMonths": [5, 8, 11, 2],
+  "start": { "kyu": null, "color": "白色", "name": "白帯（無級）", "note": "入会時。最初の審査を受けると10級（水色帯）になる" },
+  "belts": [
+    { "kyu": 10, "color": "水色", "kata": "十二の一", "kataFile": "skills/kata/juni-no-ichi.md", "kumite": "無し", "kihon": "その場基本", "eligibility": "入会後3ヶ月以上" },
+    { "kyu": 9, "color": "黄色", "kata": "平安二段", "kataFile": "skills/kata/heian-nidan.md", "kumite": "無し", "kihon": "移動基本", "eligibility": "10級取得後半年以上" },
+    { "kyu": 8, "color": "黄色", "kata": "平安二段", "kataFile": "skills/kata/heian-nidan.md", "kumite": "分解1本", "kihon": "移動基本", "eligibility": "9級取得後半年以上" },
+    { "kyu": 7, "color": "緑色", "kata": "平安三段", "kataFile": "skills/kata/heian-sandan.md", "kumite": "無し", "kihon": "移動基本", "eligibility": "8級取得後半年以上" },
+    { "kyu": 6, "color": "緑色", "kata": "平安三段", "kataFile": "skills/kata/heian-sandan.md", "kumite": "分解1本", "kihon": "移動基本", "eligibility": "7級取得後半年以上" },
+    { "kyu": 5, "color": "紫色", "kata": "平安初段", "kataFile": "skills/kata/heian-shodan.md", "kumite": "分解1本", "kihon": "移動基本", "eligibility": "6級取得後半年以上" },
+    { "kyu": 4, "color": "紫色", "kata": "平安四段", "kataFile": "skills/kata/heian-yondan.md", "kumite": "分解1本", "kihon": "移動基本", "eligibility": "5級取得後半年以上" },
+    { "kyu": 3, "color": "茶色", "kata": "平安五段", "kataFile": "skills/kata/heian-godan.md", "kumite": "分解1本", "kihon": "移動基本", "eligibility": "4級取得後半年以上" },
+    { "kyu": 2, "color": "茶色", "kata": "抜塞大", "kataFile": "skills/kata/bassai-dai.md", "kumite": "自由1本", "kihon": "移動基本", "eligibility": "3級取得後半年以上" },
+    { "kyu": 1, "color": "茶色", "kata": "征遠鎮", "kataFile": "skills/kata/seienchin.md", "kumite": "自由1本", "kihon": "移動基本", "eligibility": "2級取得後半年以上" }
+  ],
+  "goal": { "name": "初段（黒帯）" }
+}
