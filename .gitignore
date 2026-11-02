@@ -27,3 +27,11 @@ pnpm-debug.log*
 # 手本動画は公開リポジトリに入れない
 *.mp4
 *.mov
+
+# 雛形（create-next-app）由来
+/.pnp
+.pnp.*
+*.pem
+yarn-error.log*
+.pnpm-debug.log*
+/drizzle/meta/_journal.json.bak
