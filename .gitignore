@@ -34,3 +34,6 @@ pnpm-debug.log*
 *.pem
 yarn-error.log*
 .pnpm-debug.log*
+
+# Claude Code の個人設定
+.claude/settings.local.json
