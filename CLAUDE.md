@@ -6,7 +6,8 @@
 Built with Claude: Japan 2026（11/2 12:30〜11/8 20:00）の提出作品。コードはすべて期間中に新しく書く。
 
 - リポジトリ：https://github.com/yn01/karate-note（公開）
-- 計画資料：~/Dev/karate-note-plan/plan.md（リポジトリの外。期間前に作ったもの。まず読む）
+- 計画資料：~/Dev/karate-note-setup/karate-note-plan/plan.md（リポジトリの外。期間前に作ったもの。まず読む。サンプルノート画像は同じフォルダの sample-notes/）
+- 要件：docs/requirements.md（plan.md から書き起こしたもの）
 - 自作のプラグインやスキル（dev-forge、dev-gate、forge-ledger、jev-dispatch、skill-distiller）は開発の道具として使うが、このリポジトリには入れない
 
 ## 設計の原則（必ず守る）
@@ -99,4 +100,16 @@ skills/ に指導者の知見をMarkdownで置き、場面ごとにプロンプ�
 
 ## よく使うコマンド
 
-（雛形を作ったあとに追記）
+- `npm run dev`：開発サーバー（http://localhost:3000）
+- `npm run typecheck`：型チェック（`next typegen` のあと `tsc`）
+- `npm run lint`／`npm run build`
+- `npm run db:generate`：`src/db/schema.ts` からマイグレーションを作る
+- `npm run db:migrate`：マイグレーションを Neon に当てる
+- `npm run db:seed`：data/seed/ の合成データを入れ直す（何度流しても同じ）
+
+## Next.js 16 の注意
+
+- `cacheComponents` が有効。`export const dynamic` などのセグメント設定は使えない。
+- DB を読むコンポーネントは `<Suspense>` で包み、中で `await connection()` を呼ぶ（src/app/student/page.tsx が例）。
+- 迷ったら node_modules/next/dist/docs/ を読む（AGENTS.md）。
+- DB はサーバー側だけ：アプリからは `@/db`（server-only）、スクリプトからは `src/db/client.ts` の `createDb()`。
