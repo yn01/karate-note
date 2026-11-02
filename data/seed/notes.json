@@ -1,0 +1,10 @@
+{
+  "source": "plan.md「8」の過去3週分のノート（サンプルノート画像と同じ）と、一覧の「未確認」バッジ用の短いノート。すべて架空",
+  "notes": [
+    { "studentSlug": "takuya", "date": "2026-10-11", "theme": "かたをがんばる", "good": "声が出せた", "improve": "もっとがんばる", "source": "photo" },
+    { "studentSlug": "takuya", "date": "2026-10-18", "theme": "平安二だんを力強くやる", "good": "キレが出た気がする", "improve": "もっとがんばる", "source": "photo" },
+    { "studentSlug": "takuya", "date": "2026-10-25", "theme": "ばっさいだいをおぼえる", "good": "さいごまでできた", "improve": "もっとがんばる。うでをふりすぎかも", "source": "photo" },
+    { "studentSlug": "sakura", "date": "2026-11-01", "theme": "十二の一をおぼえる", "good": "まえよりおぼえた", "improve": "こえを大きくする", "source": "text" },
+    { "studentSlug": "ren", "date": "2026-11-01", "theme": "平安三だんの向きをまちがえない", "good": "向きはまちがえなかった", "improve": "立ち方が高くなる", "source": "text" }
+  ]
+}
