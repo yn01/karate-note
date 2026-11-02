@@ -23,7 +23,7 @@
 
 ## セットアップ
 
-必要なもの：Node.js 20 以上、Neon（Postgres）のデータベース。
+必要なもの：Node.js 20.12 以上、Neon（Postgres）のデータベース。
 
 ```bash
 npm install
