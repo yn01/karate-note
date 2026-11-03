@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: { bodySizeLimit: "4mb" },
   },
+  // 見本のノート画像はサーバーでも読む（public は CDN 配信なので、関数に入れておく）
+  outputFileTracingIncludes: {
+    "/student/note": ["./public/samples/sample-note-11-01.png"],
+  },
   // トップは道場生ホームへ（デモの入口）
   async redirects() {
     return [{ source: "/", destination: "/student", permanent: false }];

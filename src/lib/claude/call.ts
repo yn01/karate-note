@@ -6,7 +6,7 @@ import "server-only";
 import { todayInJapan } from "@/lib/dates";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import { and, count, eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray, sql } from "drizzle-orm";
 import { claudeCalls, getDb } from "@/db";
 import { getClaudeClient } from "./client";
 import { getDemoResponse, type DemoOptions } from "./demo";
@@ -53,14 +53,14 @@ export async function callScene<S extends SceneName>(
   if (!client) return demo("demo_nokey");
 
   // DB が使えず上限を確かめられないときは、呼ばずにデモ応答へ倒す
-  let used: number;
+  let used: { all: number; scene: number };
   try {
-    used = await countBilledCalls(day);
+    used = await countBilledCalls(day, scene);
   } catch (error) {
     console.warn("[claude] 上限を確かめられませんでした", error);
     return { data: getDemoResponse(scene, input.demo), source: "demo", reason: "demo_error" };
   }
-  if (used >= dailyLimit()) return demo("demo_limit");
+  if (used.all >= dailyLimit() || used.scene >= config.dailyLimit) return demo("demo_limit");
 
   let response: Anthropic.Beta.BetaMessage;
   try {
@@ -143,12 +143,15 @@ function dailyLimit(): number {
 // 当日（日本時間）に API まで届いた回数。neon-http は排他制御ができないので、
 // 同時に呼ばれると上限を数件こえることがある（デモの規模では許容する）。
 // サーバー側の fallback が働いた呼び出しも1回と数える。
-async function countBilledCalls(day: string): Promise<number> {
+async function countBilledCalls(day: string, scene: SceneName): Promise<{ all: number; scene: number }> {
   const [row] = await getDb()
-    .select({ n: count() })
+    .select({
+      all: count(),
+      scene: sql<number>`count(*) filter (where ${claudeCalls.scene} = ${scene})`.mapWith(Number),
+    })
     .from(claudeCalls)
     .where(and(eq(claudeCalls.day, day), inArray(claudeCalls.outcome, BILLED_OUTCOMES)));
-  return row?.n ?? 0;
+  return { all: row?.all ?? 0, scene: row?.scene ?? 0 };
 }
 
 async function record(row: typeof claudeCalls.$inferInsert) {

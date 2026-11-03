@@ -11,6 +11,8 @@ export type SceneConfig = {
   timeoutMs: number; // 1回の試行の時間切れ
   // 再試行の回数。待ち時間の最長は timeoutMs ×（maxRetries＋1）。Vercel の関数の上限（300秒）より短くする
   maxRetries: number;
+  // この場面だけの1日の上限（全体の上限 CLAUDE_DAILY_LIMIT とは別）。1つの場面が全体の枠を使い切らないように
+  dailyLimit: number;
   // 断られたとき（refusal）に server-side fallback を使うか。Haiku は対象外
   serverFallback: boolean;
 };
@@ -23,6 +25,7 @@ export const SCENES: Record<SceneName, SceneConfig> = {
     maxTokens: 4000,
     timeoutMs: 45_000,
     maxRetries: 1,
+    dailyLimit: 60,
     serverFallback: true,
   },
   oneOnOne: {
@@ -32,6 +35,7 @@ export const SCENES: Record<SceneName, SceneConfig> = {
     maxTokens: 4000,
     timeoutMs: 20_000,
     maxRetries: 1,
+    dailyLimit: 60,
     serverFallback: false,
   },
   questioning: {
@@ -41,6 +45,7 @@ export const SCENES: Record<SceneName, SceneConfig> = {
     maxTokens: 4000,
     timeoutMs: 20_000,
     maxRetries: 1,
+    dailyLimit: 150,
     serverFallback: true,
   },
   draft: {
@@ -50,6 +55,7 @@ export const SCENES: Record<SceneName, SceneConfig> = {
     maxTokens: 16000,
     timeoutMs: 150_000,
     maxRetries: 0,
+    dailyLimit: 40,
     serverFallback: true,
   },
   check: {
@@ -59,6 +65,7 @@ export const SCENES: Record<SceneName, SceneConfig> = {
     maxTokens: 8000,
     timeoutMs: 90_000,
     maxRetries: 0,
+    dailyLimit: 40,
     serverFallback: true,
   },
 };

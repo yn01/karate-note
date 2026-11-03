@@ -3,7 +3,7 @@ import { z } from "zod";
 
 // 1 ノートの読み取り
 export const noteReadingSchema = z.object({
-  date: z.string().describe("ノートの日付。YYYY-MM-DD。年が書かれていなければ稽古の年で補う。読めなければ空文字"),
+  date: z.string().describe("ノートの日付。YYYY-MM-DD。年がなければ、今日をふくめて今日より後にならない、いちばん近い年で補う。読めなければ空文字"),
   theme: z.string().describe("けいこ前 今日のテーマ（書かれたまま）"),
   good: z.string().describe("けいこ後 よかったこと（書かれたまま）"),
   improve: z.string().describe("けいこ後 直したいこと（書かれたまま）"),
