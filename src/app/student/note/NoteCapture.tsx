@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import type { NoteReading } from "@/lib/claude/schemas";
 import { todayInJapan } from "@/lib/dates";
 import { readNote, saveNote } from "./actions";
@@ -23,6 +23,22 @@ export function NoteCapture() {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const fileInput = useRef<HTMLInputElement>(null);
+  const savedHeading = useRef<HTMLParagraphElement>(null);
+
+  // その場で作ったプレビュー（object URL）は、使い終わったら手放す
+  const preview = step.name === "reading" || step.name === "confirm" ? step.preview : undefined;
+  useEffect(() => {
+    if (!preview || preview === SAMPLE_PREVIEW) return;
+    return () => URL.revokeObjectURL(preview);
+  }, [preview]);
+
+  useEffect(() => {
+    if (step.name === "saved") savedHeading.current?.focus();
+  }, [step.name]);
+
+  // 状態を知らせる文（読み上げ用に、いつも置いておく）
+  const status =
+    step.name === "reading" ? "よみとって いるよ" : step.name === "saved" ? "ほぞん したよ" : pending ? "ほぞん しているよ" : "";
 
   const read = (form: FormData, preview: string, source: Source) => {
     setError(null);
@@ -35,7 +51,13 @@ export function NoteCapture() {
           setStep({ name: "choose" });
           return;
         }
-        setStep({ name: "confirm", source, reading: result.reading, fromDemo: result.source === "demo", preview });
+        setStep({
+          name: "confirm",
+          source,
+          reading: fitReading(result.reading),
+          fromDemo: result.source === "demo",
+          preview,
+        });
       } catch {
         setError("うまく おくれなかったよ。もういちど ためしてね");
         setStep({ name: "choose" });
@@ -72,17 +94,24 @@ export function NoteCapture() {
   const onSave = (form: FormData) => {
     setError(null);
     startTransition(async () => {
-      const result = await saveNote(form);
-      if (!result.ok) {
-        setError(result.message);
-        return;
+      try {
+        const result = await saveNote(form);
+        if (!result.ok) {
+          setError(result.message);
+          return;
+        }
+        setStep({ name: "saved", date: result.date });
+      } catch {
+        setError("ほぞん できなかったよ。もういちど ためしてね");
       }
-      setStep({ name: "saved", date: result.date });
     });
   };
 
   return (
     <div className="space-y-4">
+      <p role="status" className="sr-only">
+        {status}
+      </p>
       {error && (
         <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">
           {error}
@@ -92,12 +121,12 @@ export function NoteCapture() {
       {step.name === "choose" && (
         <div className="space-y-3">
           <p className="text-sm text-ink/80">けいこの あとに かいた ノートを とりこもう。</p>
-          <label className="block w-full cursor-pointer rounded-2xl bg-ink py-4 text-center text-lg font-bold text-white">
+          <label className="block w-full cursor-pointer rounded-2xl bg-ink py-4 text-center text-lg font-bold text-white focus-within:ring-4 focus-within:ring-amber-300">
             📷 ノートを とる
             <input
               ref={fileInput}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
               capture="environment"
               className="sr-only"
               onChange={(e) => onPhoto(e.target.files?.[0])}
@@ -117,7 +146,7 @@ export function NoteCapture() {
       )}
 
       {step.name === "reading" && (
-        <div className="space-y-3 text-center" aria-live="polite">
+        <div className="space-y-3 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- その場で作った画像のプレビュー */}
           <img src={step.preview} alt="おくった ノート" className="mx-auto max-h-60 rounded-xl shadow" />
           <p className="font-bold">よみとって いるよ…</p>
@@ -131,7 +160,12 @@ export function NoteCapture() {
               よみとれなかったので、みほんを だしているよ。じぶんの ノートと ちがったら なおしてね。
             </p>
           )}
-          {step.source !== "text" && !step.fromDemo && (
+          {step.source !== "text" && !step.fromDemo && isEmptyReading(step.reading) && (
+            <p className="rounded-xl bg-amber-100 p-3 text-sm font-bold">
+              うまく よめなかったよ。じぶんで かいてね。
+            </p>
+          )}
+          {step.source !== "text" && !step.fromDemo && !isEmptyReading(step.reading) && (
             <p className="text-sm text-ink/80">よみとったよ。ちがう ところが あったら なおしてね。</p>
           )}
           {step.preview && (
@@ -139,7 +173,6 @@ export function NoteCapture() {
             <img src={step.preview} alt="おくった ノート" className="mx-auto max-h-40 rounded-xl shadow" />
           )}
           <input type="hidden" name="source" value={step.source} />
-          <input type="hidden" name="rawText" value={step.reading.rawText} />
           <Field label="ひづけ">
             <input
               type="date"
@@ -161,8 +194,9 @@ export function NoteCapture() {
           </button>
           <button
             type="button"
+            disabled={pending}
             onClick={() => setStep({ name: "choose" })}
-            className="w-full py-2 text-sm text-ink/70 underline"
+            className="w-full py-2 text-sm text-ink/70 underline disabled:opacity-50"
           >
             やりなおす
           </button>
@@ -171,7 +205,9 @@ export function NoteCapture() {
 
       {step.name === "saved" && (
         <div className="space-y-4 rounded-2xl bg-white p-5 text-center shadow-sm">
-          <p className="text-lg font-bold">ほぞん したよ！</p>
+          <p ref={savedHeading} tabIndex={-1} className="text-lg font-bold outline-none">
+            ほぞん したよ！
+          </p>
           <button
             type="button"
             disabled
@@ -211,9 +247,22 @@ function TextField({ label, name, value }: { label: string; name: string; value:
   );
 }
 
-// 写真を長辺 1600px の JPEG に縮める（iPhone の写真は数MBあるため）
+const MAX_FIELD = 200;
+const MAX_UPLOAD = 3.4 * 1024 * 1024; // サーバーの上限（3.5MB）より少し小さく
+
+const isEmptyReading = (r: NoteReading) => !r.theme && !r.good && !r.improve;
+
+// 入力欄の文字数（200字）に合わせる
+const fitReading = (r: NoteReading): NoteReading => ({
+  ...r,
+  theme: r.theme.slice(0, MAX_FIELD),
+  good: r.good.slice(0, MAX_FIELD),
+  improve: r.improve.slice(0, MAX_FIELD),
+});
+
+// 写真を長辺 1600px の JPEG に縮める（iPhone の写真は数MBあるため）。大きければ品質を下げる
 async function shrinkImage(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
+  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
   const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
@@ -222,7 +271,17 @@ async function shrinkImage(file: File): Promise<Blob> {
   if (!ctx) throw new Error("canvas");
   ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
-  return await new Promise<Blob>((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob"))), "image/jpeg", 0.85),
-  );
+  try {
+    for (const quality of [0.85, 0.7, 0.5]) {
+      const blob = await new Promise<Blob>((resolve, reject) =>
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob"))), "image/jpeg", quality),
+      );
+      if (blob.size <= MAX_UPLOAD) return blob;
+    }
+    throw new Error("too large");
+  } finally {
+    // Safari のキャンバスのメモリを早く手放す
+    canvas.width = 0;
+    canvas.height = 0;
+  }
 }
