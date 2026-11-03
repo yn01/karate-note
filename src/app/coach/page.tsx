@@ -63,6 +63,7 @@ async function List() {
               <div className="flex items-start justify-between gap-3">
                 <ExamPlanEditor
                   slug={s.slug}
+                  name={`${s.name}${s.honorific}`}
                   months={months}
                   targets={s.targets}
                   current={s.exam?.target?.kyu ? { month: s.exam.month, kyu: s.exam.target.kyu } : null}

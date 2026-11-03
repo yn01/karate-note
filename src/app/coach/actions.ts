@@ -9,18 +9,20 @@ import { upcomingExamMonths } from "@/lib/exams";
 export type SaveExamResult = { ok: true } | { ok: false; message: string };
 
 export async function saveExamPlan(slugIn: unknown, monthIn: unknown, kyuIn: unknown): Promise<SaveExamResult> {
-  const slug = typeof slugIn === "string" ? slugIn : "";
+  const slug = typeof slugIn === "string" && slugIn.length <= 64 ? slugIn : "";
   const month = typeof monthIn === "string" ? monthIn : "";
+  if (!slug) return { ok: false, message: "道場生が見つかりません" };
   const db = getDb();
-  const [student] = await db
-    .select({ id: students.id, beltOrder: belts.order })
-    .from(students)
-    .innerJoin(belts, eq(students.beltId, belts.id))
-    .where(eq(students.slug, slug))
-    .limit(1);
-  if (!student) return { ok: false, message: "道場生が見つかりません" };
 
   try {
+    const [student] = await db
+      .select({ id: students.id, beltOrder: belts.order })
+      .from(students)
+      .innerJoin(belts, eq(students.beltId, belts.id))
+      .where(eq(students.slug, slug))
+      .limit(1);
+    if (!student) return { ok: false, message: "道場生が見つかりません" };
+
     if (month === "") {
       // 未定にする
       await db.delete(examPlans).where(eq(examPlans.studentId, student.id));

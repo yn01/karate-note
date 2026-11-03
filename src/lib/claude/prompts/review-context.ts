@@ -29,6 +29,7 @@ export function reviewContextText(ctx: ReviewContext): string {
         `保護者の願い：${safe(ctx.plan.guardianWish)}`,
         `今期の重点：${safe(ctx.plan.focus)}`,
         `強み：${safe(ctx.plan.strengths.join("、"))}`,
+        ...(ctx.plan.examPlan ? [`審査予定：${safe(ctx.plan.examPlan)}。マイルストーンと時期が違うときは、こちらが新しい`] : []),
         ...ctx.plan.milestones.map((m) => `マイルストーン（${m.dueLabel}）：${safe(m.description)}`),
       ].join("\n")
     : "（なし）";

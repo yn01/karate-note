@@ -4,6 +4,7 @@ import "server-only";
 import { and, asc, desc, eq, lt } from "drizzle-orm";
 import { developmentPlans, getDb, milestones, notes, oneOnOnes } from "@/db";
 import { loadSkill, type Skill } from "@/lib/skills";
+import { activeExamPlanText } from "@/lib/queries/exam-plan";
 import { todayInJapan } from "@/lib/dates";
 
 export type QuestioningContext = {
@@ -20,7 +21,7 @@ export async function buildQuestioningContext(noteId: number): Promise<Questioni
   if (!note) return null;
 
   const today = todayInJapan();
-  const [pastNotes, [plan], planMilestones, [coach], skills] = await Promise.all([
+  const [pastNotes, [plan], planMilestones, [coach], skills, examText] = await Promise.all([
     db
       .select({ date: notes.date, theme: notes.theme, good: notes.good, improve: notes.improve })
       .from(notes)
@@ -45,6 +46,7 @@ export async function buildQuestioningContext(noteId: number): Promise<Questioni
       // 到達基準（まだ／ときどき／安定）の節は渡さない。段階のことばを子どもに使わないため
       loadSkill("kata/heian-nidan.md", { excludeSections: ["到達基準"] }),
     ]),
+    activeExamPlanText(note.studentId),
   ]);
 
   const next = planMilestones.find((m) => m.dueDate >= today) ?? planMilestones.at(-1);
@@ -56,7 +58,8 @@ export async function buildQuestioningContext(noteId: number): Promise<Questioni
       ? {
           selfGoals: plan.selfGoals,
           focus: text(plan.focus),
-          nextMilestone: next ? `${next.dueLabel}：${next.description}` : "",
+          // 先生が決めた審査予定があればそれを先に（育成計画のマイルストーンより新しい）
+          nextMilestone: [examText, next ? `${next.dueLabel}：${next.description}` : ""].filter(Boolean).join("／"),
         }
       : null,
     coachWords: coach?.transcript ?? null,

@@ -207,7 +207,7 @@ async function main() {
 
   // 審査予定（先生が決めたもの）
   const exams = load<{ plans: { studentSlug: string; examMonth: string; targetKyu: number }[] }>("exam-plans.json");
-  await db.insert(examPlans).values(
+  if (exams.plans.length > 0) await db.insert(examPlans).values(
     exams.plans.map((e) => {
       const beltId = beltIdByKyu.get(e.targetKyu);
       if (!beltId) throw new Error(`${e.targetKyu}級の帯がありません`);
