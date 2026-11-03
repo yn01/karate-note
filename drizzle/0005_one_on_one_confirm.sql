@@ -1,0 +1,2 @@
+ALTER TABLE "one_on_ones" ADD COLUMN "organized_confirmed_at" timestamp with time zone;--> statement-breakpoint
+CREATE UNIQUE INDEX "one_on_ones_student_date" ON "one_on_ones" USING btree ("student_id","date");

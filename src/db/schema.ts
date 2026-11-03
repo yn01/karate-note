@@ -104,16 +104,22 @@ export const criteriaChecks = pgTable(
 );
 
 // 1対1のことば（音声は保存せず、文字だけ）。整理の形は Claude の出力（src/lib/claude/schemas.ts）と同じ
-export const oneOnOnes = pgTable("one_on_ones", {
-  id: serial("id").primaryKey(),
-  studentId: integer("student_id")
-    .notNull()
-    .references(() => students.id, { onDelete: "cascade" }),
-  date: date("date").notNull(),
-  transcript: text("transcript").notNull(),
-  organized: jsonb("organized").$type<OneOnOneOrganized>(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const oneOnOnes = pgTable(
+  "one_on_ones",
+  {
+    id: serial("id").primaryKey(),
+    studentId: integer("student_id")
+      .notNull()
+      .references(() => students.id, { onDelete: "cascade" }),
+    date: date("date").notNull(),
+    transcript: text("transcript").notNull(), // 先生自身のことば（文字起こし）
+    organized: jsonb("organized").$type<OneOnOneOrganized>(), // Claude の整理（先生が確かめるまでは下書き）
+    organizedConfirmedAt: timestamp("organized_confirmed_at", { withTimezone: true }), // 先生が確かめた日時
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  // 1人1日に1件（同じ日をもう一度整理したら上書き）
+  (t) => [uniqueIndex("one_on_ones_student_date").on(t.studentId, t.date)],
+);
 
 // ノート
 export const notes = pgTable(
