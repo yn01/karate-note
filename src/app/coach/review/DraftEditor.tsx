@@ -209,7 +209,7 @@ export function DraftEditor({ noteId, criteria, saved }: Props) {
               <LetterList draft={draft} k="watchPoints" label="今週見てほしいところ" edit={edit} />
               <LetterList draft={draft} k="cheerHints" label="声かけのヒント" edit={edit} />
               <Area
-                label="日曜の頑張り"
+                label="稽古での頑張り"
                 max={LIMITS.text}
                 value={draft.guardianLetter.effort}
                 onChange={(v) => edit((d) => ({ ...d, guardianLetter: { ...d.guardianLetter, effort: v } }))}
