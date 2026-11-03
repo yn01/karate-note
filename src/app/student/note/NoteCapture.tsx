@@ -208,13 +208,12 @@ export function NoteCapture() {
           <p ref={savedHeading} tabIndex={-1} className="text-lg font-bold outline-none">
             ほぞん したよ！
           </p>
-          <button
-            type="button"
-            disabled
-            className="w-full rounded-2xl bg-ink/30 py-4 text-lg font-bold text-white"
+          <Link
+            href="/student/question"
+            className="block w-full rounded-2xl bg-ink py-4 text-lg font-bold text-white"
           >
-            ふりかえりの しつもんへ（じゅんびちゅう）
-          </button>
+            ふりかえりの しつもんへ
+          </Link>
           <Link href="/student" className="block text-sm text-ink/70 underline">
             ホームに もどる
           </Link>

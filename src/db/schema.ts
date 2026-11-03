@@ -146,9 +146,10 @@ export const questionSessions = pgTable("question_sessions", {
   id: serial("id").primaryKey(),
   noteId: integer("note_id")
     .notNull()
+    .unique() // 1冊のノートに問いかけは1回（やり直したら上書き）
     .references(() => notes.id, { onDelete: "cascade" }),
   turns: jsonb("turns").$type<QuestionTurn[]>().notNull(),
-  summary: text("summary"),
+  summary: text("summary"), // 本人が確かめて直したまとめ
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

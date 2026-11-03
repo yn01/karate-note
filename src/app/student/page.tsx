@@ -42,6 +42,12 @@ async function StudentHome() {
       >
         📷 ノートを とる
       </Link>
+      <Link
+        href="/student/question"
+        className="block w-full rounded-2xl border-2 border-ink bg-white py-3 text-center font-bold"
+      >
+        ふりかえりの しつもん
+      </Link>
 
       <BeltRoad road={road} currentId={current?.id ?? null} nextId={next?.id ?? null} nextExam={nextExam} />
     </div>
