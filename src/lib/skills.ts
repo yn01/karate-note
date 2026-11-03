@@ -6,6 +6,7 @@ import { join } from "node:path";
 export type Skill = { path: string; body: string };
 
 const SKILLS_DIR = join(process.cwd(), "skills");
+export const DRAFT_MARK = "<!-- 下書き";
 let templateLines: Set<string> | undefined;
 
 type LoadOptions = {
@@ -22,8 +23,10 @@ export async function loadSkill(relPath: string, opts: LoadOptions = {}): Promis
   } catch {
     return null;
   }
+  // 先生が確かめる前の下書き（先頭の印）は、プロンプトに入れない。印を消すと読み込まれる
+  if (raw.includes(DRAFT_MARK)) return null;
   const template = await loadTemplateLines();
-  const lines = dropSections(raw.split("\n"), opts.excludeSections ?? [])
+  const lines = dropSections(raw.replace(/<!--[\s\S]*?-->/g, "").split("\n"), opts.excludeSections ?? [])
     .map((l) => l.replace(/（例：[^）]*）/g, ""))
     .filter((l) => !template.has(norm(l)) || isStructural(l));
 
