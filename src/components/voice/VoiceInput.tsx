@@ -36,12 +36,17 @@ const ERRORS: Record<string, string> = {
 type Props = {
   onText: (finalText: string) => void; // 確定した文を足す
   onInterim?: (text: string) => void; // 話している途中の文
+  onListeningChange?: (listening: boolean) => void;
   disabled?: boolean;
 };
 
-export function VoiceInput({ onText, onInterim, disabled }: Props) {
+export function VoiceInput({ onText, onInterim, onListeningChange, disabled }: Props) {
   const [supported, setSupported] = useState<boolean | null>(null);
-  const [listening, setListening] = useState(false);
+  const [listening, setListeningState] = useState(false);
+  const setListening = (v: boolean) => {
+    setListeningState(v);
+    onListeningChange?.(v);
+  };
   const [message, setMessage] = useState("");
   const rec = useRef<Recognition | null>(null);
 
