@@ -22,3 +22,18 @@
 - 画面2 ノートの取り込み（Claude 場面1：ノートの読み取り）。`src/lib/claude/` にモデルの設定をまとめる。
 - skills/kata/heian-nidan.md の中身（作者が書く）。到達基準の要点の名前を criteria-checks.json と合わせる。
 - 指導者一覧の「未確認」バッジの定義（承認済みの確認がないノート）を決める。
+
+## 11/03 T02 Vercel への公開
+
+### 決めたこと
+- 公開 URL：https://karate-note.vercel.app/（作者が Vercel で GitHub から取り込み、`DATABASE_URL` を設定）。開発と同じ Neon の DB を使う。
+- Hobby プランでは関数の地域を変えられず iad1（米国東部）のまま。代わりに道場生ホームの問い合わせを同時に投げ、DB との往復を5回から2回に減らした（表示は約1.2秒 → 約1.0秒）。
+- 動画は外部ツールではなく Claude Code で作る（Remotion の案）。素材は ~/Dev/karate-note-video/assets/ に置き、公開リポジトリに入れない。
+- タスクとスケジュールを docs/schedule.md にまとめた。
+
+### 詰まったこと
+- 関数の地域が Hobby プランで1つに限られる。さらに遅ければ、Neon を us-east-1 に作り直す。
+
+### 次にやること
+- T03 Claude の土台（モデルの設定・1日の呼び出し上限・保存済みのデモ応答）。
+- 作者：skills/kata/heian-nidan.md と skills/questioning.md（11/4 朝まで）。
