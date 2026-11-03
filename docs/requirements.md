@@ -57,7 +57,9 @@
 
 ## 5. Claude を呼ぶ5場面
 
-使うモデル名は `src/lib/claude/` の設定に1か所でまとめ、README に表で示す。出力はすべて構造化（JSON）。
+使うモデル名は `src/lib/claude/models.ts` に1か所でまとめ、README に表で示す。出力はすべて構造化（JSON、`src/lib/claude/schemas.ts`）。5場面とも共通の入口 `callScene()` を通る。
+
+割り当て（T03 で決定）：1 読み取り＝Opus 5.5（effort low）、2 整理＝Haiku 5.5（low）、3 問いかけ＝Sonnet 5.5（low）、4 下書き＝Opus 5.5（high）、5 点検＝Opus 5.5（medium）。
 
 | # | 場面 | 入力 → 出力 | モデル・機能の選び方 |
 | --- | --- | --- | --- |
@@ -94,6 +96,6 @@
 
 ## 8. 守り
 
-- 1日の Claude 呼び出し上限（DB でカウント）。超えたら保存済みのデモ応答（data/seed/demo-responses.json がもと）を返す。
+- 1日の Claude 呼び出し上限（`claude_calls` で数える。`CLAUDE_DAILY_LIMIT`、既定200）。超えたら保存済みのデモ応答（data/seed/demo-responses.json）を返す。`CLAUDE_MODE=demo` で常にデモ応答。
 - API 障害時も、保存済みのデモ応答で一周できる。
 - 公開は Vercel。審査員がログインなしで触れるデモモード。

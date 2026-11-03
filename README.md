@@ -43,7 +43,7 @@
 
 ```bash
 npm install
-cp .env.example .env.local   # DATABASE_URL に Neon の接続文字列を入れる
+cp .env.example .env.local   # DATABASE_URL（Neon）と ANTHROPIC_API_KEY を入れる
 npm run db:migrate           # テーブルを作る
 npm run db:seed              # 合成データを入れる（何度流しても同じ結果）
 npm run dev                  # http://localhost:3000
@@ -60,6 +60,29 @@ npm run dev                  # http://localhost:3000
 | `npm run db:generate` | スキーマ（`src/db/schema.ts`）からマイグレーションを作る |
 | `npm run db:migrate` | マイグレーションを DB に当てる |
 | `npm run db:seed` | 合成データを入れ直す |
+| `npm run claude:smoke` | Claude の呼び出しの土台を確かめる（本物1回・デモモード・上限） |
+
+## Claude の使い分け
+
+Claude を呼ぶ場面は5つです。モデルと effort は [src/lib/claude/models.ts](src/lib/claude/models.ts) の1か所にまとめています。出力はすべて構造化出力（JSON、zod のスキーマは [src/lib/claude/schemas.ts](src/lib/claude/schemas.ts)）です。
+
+| 場面 | モデル | effort | 選んだ理由 |
+| --- | --- | --- | --- |
+| 1 ノートの読み取り | Claude Opus 5.5（`claude-opus-5-5`） | low | 手書きの画像を読む力 |
+| 2 1対1のことばの整理 | Claude Haiku 5.5（`claude-haiku-5-5`） | low | 短いテキストの整理。速さ優先 |
+| 3 問いかけ | Claude Sonnet 5.5（`claude-sonnet-5-5`） | low | 子どもを待たせない速さと、答えを教えない指示を守る力 |
+| 4 下書き | Claude Opus 5.5（`claude-opus-5-5`） | high | 育成計画と形の知見を踏まえて考える |
+| 5 点検 | Claude Opus 5.5（`claude-opus-5-5`） | medium | 下書きとは別の呼び出しで、原則に反していないかを確かめる |
+
+### 守り
+
+- 5場面はすべて共通の入口 `callScene()`（[src/lib/claude/call.ts](src/lib/claude/call.ts)）を通ります。
+- 次のときは Claude を呼ばず（または呼んだ結果を使わず）、**保存済みのデモ応答**（[data/seed/demo-responses.json](data/seed/demo-responses.json)）で画面を続けます。
+  - 1日（日本時間）に Claude が答えた回数が `CLAUDE_DAILY_LIMIT`（既定 200）に達したとき。回数は DB の `claude_calls` で数えます（プロンプトや出力の中身は残しません）
+  - API の障害・時間切れ・混雑、出力が形に合わないとき、断られたとき（Opus・Sonnet はサーバー側の fallback で別のモデルが先に試します）
+  - `ANTHROPIC_API_KEY` がないとき、`CLAUDE_MODE=demo` のとき
+- API キーはサーバー側の環境変数だけで読み、ブラウザに渡るコードからは読み込めません（`server-only`）。
+- Claude の出力（下書き）は、指導者が直して承認するまで道場生と保護者には届きません。
 
 ## 技術スタック
 

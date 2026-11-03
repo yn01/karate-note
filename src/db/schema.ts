@@ -5,6 +5,7 @@ import {
   boolean,
   check,
   date,
+  index,
   integer,
   jsonb,
   pgEnum,
@@ -14,6 +15,9 @@ import {
   timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
+import type { CheckResult, Draft, OneOnOneOrganized } from "../lib/claude/schemas";
+
+export type { CheckResult, OneOnOneOrganized };
 
 export const rankTypeEnum = pgEnum("rank_type", ["start", "kyu", "dan"]);
 export const criteriaStatusEnum = pgEnum("criteria_status", [
@@ -99,13 +103,7 @@ export const criteriaChecks = pgTable(
   (t) => [uniqueIndex("criteria_checks_student_kata_point").on(t.studentId, t.kata, t.pointKey)],
 );
 
-// 1対1のことば（音声は保存せず、文字だけ）
-export type OneOnOneOrganized = {
-  pointers: string[]; // 指摘
-  selfAwareness: string[]; // 本人の気づき
-  homework: string[]; // 来週の宿題
-  toGuardian: string[]; // 保護者に伝えたいこと
-};
+// 1対1のことば（音声は保存せず、文字だけ）。整理の形は Claude の出力（src/lib/claude/schemas.ts）と同じ
 export const oneOnOnes = pgTable("one_on_ones", {
   id: serial("id").primaryKey(),
   studentId: integer("student_id")
@@ -152,31 +150,13 @@ export const questionSessions = pgTable("question_sessions", {
 // 指導者の確認（下書き → 点検 → 指導者が直して承認）
 // ルール：道場生・保護者向けの問い合わせは src/lib/queries/ に置き、status = 'approved' で絞り、
 // final から下の View 型の項目だけを取り出す（draft・checkResult・criteriaMatch は渡さない）。
-export type ReviewContent = {
-  summary?: string;
-  praise?: string[];
-  criteriaMatch?: { pointLabel: string; status: string; comment?: string }[];
-  themeCandidates?: string[];
-  homePractice?: { menu: string; aim: string }[];
-  safety?: string[];
-  planRevision?: string;
-  guardianLetter?: {
-    coachWords?: string;
-    watchPoints?: string[];
-    cheerHints?: string[];
-    effort?: string;
-    model?: string;
-  };
-};
+// 下書きの形は Claude の出力（src/lib/claude/schemas.ts の draft）と同じ。指導者が直した後（final）も同じ形
+export type ReviewContent = Draft;
 // 保護者に渡してよいもの（到達基準の状態＝点数は含めない）
 export type GuardianView = Pick<ReviewContent, "guardianLetter" | "homePractice" | "safety">;
 // 道場生に渡してよいもの
 export type StudentView = Pick<ReviewContent, "themeCandidates">;
 
-export type CheckResult = {
-  ok: boolean;
-  issues: { kind: string; message: string; suggestion?: string }[];
-};
 export const coachReviews = pgTable(
   "coach_reviews",
   {
@@ -213,3 +193,28 @@ export const themeSelections = pgTable("theme_selections", {
   forDate: date("for_date").notNull(), // どの稽古の日のテーマか
   selectedAt: timestamp("selected_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// Claude の呼び出しの記録（1日の上限を数える。プロンプトや出力の中身は残さない）
+export const claudeCallOutcomeEnum = pgEnum("claude_call_outcome", [
+  "ok", // Claude が答えた
+  "demo_mode", // CLAUDE_MODE=demo
+  "demo_nokey", // API キーがない
+  "demo_limit", // 1日の上限をこえた
+  "demo_error", // API の障害・時間切れ
+  "demo_refusal", // 断られた
+  "demo_invalid", // 出力が形に合わなかった
+]);
+export const claudeCalls = pgTable(
+  "claude_calls",
+  {
+    id: serial("id").primaryKey(),
+    scene: text("scene").notNull(),
+    model: text("model").notNull(),
+    day: date("day").notNull(), // 日本時間の日付
+    outcome: claudeCallOutcomeEnum("outcome").notNull(),
+    inputTokens: integer("input_tokens"),
+    outputTokens: integer("output_tokens"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("claude_calls_day_outcome").on(t.day, t.outcome)],
+);
