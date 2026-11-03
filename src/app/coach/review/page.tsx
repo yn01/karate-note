@@ -46,7 +46,7 @@ async function Review() {
         </dl>
       </Card>
       <OneOnOneEditor
-        defaultDate={note.date}
+        date={note.date}
         sampleTranscript={demoInputs.oneOnOne.transcript}
         saved={
           oneOnOne
