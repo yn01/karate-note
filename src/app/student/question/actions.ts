@@ -7,11 +7,11 @@ import { callScene } from "@/lib/claude/call";
 import { buildQuestioningContext } from "@/lib/claude/context/questioning";
 import { MAX_QUESTIONS, questioningMessages, questioningSystem } from "@/lib/claude/prompts/questioning";
 import type { NextQuestion } from "@/lib/claude/schemas";
-import { stripFurigana } from "@/lib/furigana";
+import { clampFurigana, stripFurigana } from "@/lib/furigana";
 
 const DEMO_STUDENT = "takuya";
 const MAX_ANSWER = 200;
-const MAX_QUESTION = 300;
+const MAX_QUESTION = 600; // 読みの印をふくむ長さ（読みを外すと120字まで）
 
 // Claude の質問には署名を付けて返す。クライアントが「問いかけ役の発言」を作れないようにする
 export type SignedTurn = QuestionTurn & { sig?: string };
@@ -92,9 +92,10 @@ function done(text: string, summary: string): NextQuestion {
 
 // 長さをそろえ、選択肢のない closed は open にする（画面が止まらないように）
 function normalize(q: NextQuestion): NextQuestion {
-  const choices = [...new Set(q.choices.map((c) => c.trim().slice(0, 60)).filter(Boolean))].slice(0, 4);
+  // 長さは読みを外した文字数で数え、印の途中では切らない
+  const choices = [...new Set(q.choices.map((c) => clampFurigana(c.trim(), 40)).filter(Boolean))].slice(0, 4);
   const type = q.type === "closed" && choices.length >= 2 ? "closed" : "open";
-  return { ...q, type, text: q.text.trim().slice(0, MAX_QUESTION), choices: type === "closed" ? choices : [] };
+  return { ...q, type, text: clampFurigana(q.text.trim(), 120), choices: type === "closed" ? choices : [] };
 }
 
 // クライアントから来たやり取りを確かめる（順番・署名・長さ）
@@ -113,7 +114,8 @@ function checkTurns(noteId: number, value: unknown): QuestionTurn[] | null {
       turns.push(turn);
     } else {
       if (role !== "student" || text.length > MAX_ANSWER) return null;
-      turns.push({ role: "student", text: text.trim() });
+      // 選んだ選択肢の読みの印は外して、本人の答えとして残す
+      turns.push({ role: "student", text: stripFurigana(text.trim()) });
     }
   }
   return turns;

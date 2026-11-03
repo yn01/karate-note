@@ -21,7 +21,7 @@ body {
 
 /* ふりがな：読みは小さく、行の高さを保つ */
 ruby rt {
-  font-size: 0.5em;
+  font-size: max(0.5em, 9px);
   font-weight: 400;
   letter-spacing: 0;
 }

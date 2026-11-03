@@ -25,7 +25,7 @@ export function BeltRoad({ road, currentId, nextId, nextExam }: Props) {
             <li
               key={b.id}
               className={`flex items-center gap-3 px-2 py-1 ${isNext ? "border border-ai" : ""} ${
-                !isCurrent && !isNext ? "opacity-60" : ""
+                !isCurrent && !isNext ? "text-muted" : ""
               }`}
             >
               <span
