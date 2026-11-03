@@ -8,13 +8,20 @@ import { coachReviews, getDb, notes, students } from "@/db";
 import { callScene } from "@/lib/claude/call";
 import { NOTE_READING_SYSTEM, noteReadingMessages } from "@/lib/claude/prompts/note-reading";
 import type { NoteReading } from "@/lib/claude/schemas";
-import { checkPastDate, todayInJapan } from "@/lib/dates";
+import { checkPastDate, todayInJapan, type DateProblem } from "@/lib/dates";
 
 const DEMO_STUDENT = "takuya";
 // 送信の上限（next.config の 4mb）より小さくして、こちらのことばで断れるようにする
 const MAX_IMAGE_BYTES = 3.5 * 1024 * 1024;
 const SAMPLE_IMAGE = join(process.cwd(), "public", "samples", "sample-note-11-01.png");
 const MAX_FIELD = 200;
+
+const KIDS_DATE_MESSAGE: Record<DateProblem, string> = {
+  missing: "{日付|ひづけ}を{入|い}れてね",
+  invalid: "{日付|ひづけ}を{確|たし}かめてね",
+  future: "まだ{来|き}ていない{日|ひ}は{選|えら}べません",
+  tooOld: "1{年|ねん}より{前|まえ}の{日|ひ}は{選|えら}べません",
+};
 
 type ImageType = "image/jpeg" | "image/png" | "image/webp";
 
@@ -67,7 +74,7 @@ export async function saveNote(formData: FormData): Promise<SaveNoteResult> {
   const source = sourceIn === "photo" || sourceIn === "sample" ? sourceIn : "text";
 
   const dateError = checkPastDate(date);
-  if (dateError) return { ok: false, message: dateError };
+  if (dateError) return { ok: false, message: KIDS_DATE_MESSAGE[dateError] };
   if (!fields.theme && !fields.good && !fields.improve) {
     return { ok: false, message: "どれか1つは{書|か}いてね" };
   }
