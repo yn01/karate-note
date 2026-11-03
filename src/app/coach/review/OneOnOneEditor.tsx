@@ -33,6 +33,7 @@ export function OneOnOneEditor({ date, sampleTranscript, saved }: Props) {
   const [transcript, setTranscript] = useState(saved?.transcript ?? "");
   const [organizedFor, setOrganizedFor] = useState(saved?.transcript ?? ""); // 整理したときの文字起こし
   const [interim, setInterim] = useState("");
+  const [listening, setListening] = useState(false);
   const [id, setId] = useState<number | null>(saved?.id ?? null);
   const [organized, setOrganized] = useState<OneOnOneOrganized | null>(saved?.organized ?? null);
   const [confirmed, setConfirmed] = useState(saved?.confirmed ?? false);
@@ -128,15 +129,19 @@ export function OneOnOneEditor({ date, sampleTranscript, saved }: Props) {
         disabled={pending}
         onText={(t) => setTranscript((cur) => join(cur, t))}
         onInterim={setInterim}
+        onListeningChange={setListening}
       />
       <label className="block space-y-1">
         <span className="text-sm font-bold text-muted">文字起こし（直せます）</span>
+        {/* 話している間は、途中の文もこの欄に出す（聞き取り中は直せない） */}
         <textarea
-          value={transcript}
+          value={listening && interim ? join(transcript, interim) : transcript}
           onChange={(e) => setTranscript(e.target.value.slice(0, MAX_TRANSCRIPT))}
+          readOnly={listening}
           disabled={pending}
           rows={5}
-          className="w-full rounded border border-line bg-paper p-3"
+          aria-describedby="interim-status"
+          className={`w-full rounded border bg-paper p-3 ${listening ? "border-shu" : "border-line"}`}
         />
       </label>
       <div className="flex items-center justify-between text-xs text-muted">
@@ -147,11 +152,9 @@ export function OneOnOneEditor({ date, sampleTranscript, saved }: Props) {
           {transcript.length}/{MAX_TRANSCRIPT}
         </span>
       </div>
-      {interim && (
-        <p aria-live="polite" className="text-sm text-muted">
-          … {interim}
-        </p>
-      )}
+      <p id="interim-status" aria-live="polite" className="sr-only">
+        {listening ? "聞き取っています" : ""}
+      </p>
 
       {error && (
         <p role="alert" className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
