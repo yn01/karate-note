@@ -113,6 +113,9 @@ skills/ に指導者の知見をMarkdownで置き、場面ごとにプロンプ�
 - 5場面とも `callScene()`（src/lib/claude/call.ts）を通す。SDK を直接呼ばない。
 - モデルは src/lib/claude/models.ts、出力の形は src/lib/claude/schemas.ts。デモ応答は data/seed/demo-responses.json（スキーマで検証される）。
 - server-only のモジュールをスクリプトから読むときは `tsx --conditions=react-server`。
+- `source === "demo"` の結果を画面に出すときは、デモ応答であることを必ず表示する（読み取りなら「よみとれなかったので見本を出しています」）。
+- 下書きの到達基準は、状態を criteria_checks（指導者が付けたもの）から結合する。Claude に状態を出させない。
+- 待ち時間の最長は timeoutMs ×（maxRetries＋1）。Vercel の関数の上限（300秒）より短く保つ。
 
 ## Next.js 16 の注意
 

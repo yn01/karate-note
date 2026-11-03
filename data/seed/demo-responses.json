@@ -98,14 +98,14 @@
     ],
     "criteriaMatch": [
       {
+        "pointKey": "order",
         "pointLabel": "順番どおり最後まで通せる",
-        "status": "stable",
-        "comment": ""
+        "comment": "ノートに「とちゅうで止まらずにさいごまでできた」、先生も「順番をまちがえずに最後までできていた」と話している。"
       },
       {
+        "pointKey": "uke-start",
         "pointLabel": "受けの始まり（予備動作がない）",
-        "status": "not_yet",
-        "comment": ""
+        "comment": "先生の「受けの前に腕をうしろに振っている」と、本人の「うでをふりすぎかも」「はんたいにふってからうけた」が一致している。"
       }
     ],
     "themeCandidates": [
@@ -137,7 +137,13 @@
     }
   },
   "check": {
-    "ok": true,
-    "issues": []
+    "ok": false,
+    "issues": [
+      {
+        "kind": "点検できなかった",
+        "message": "保存済みのデモ応答のため、この下書きは点検できていません。",
+        "suggestion": "指導者が内容を確かめてから承認してください。"
+      }
+    ]
   }
 }
