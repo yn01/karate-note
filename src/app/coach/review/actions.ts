@@ -3,7 +3,12 @@
 // （文字にする処理はブラウザ・OS の音声認識が行う）。
 // 整理は先生の画面にだけ出す。道場生・保護者へは、先生が承認したお便り（T07）でだけ届く。
 import { and, eq, sql } from "drizzle-orm";
-import { getDb, oneOnOnes, students, type OneOnOneOrganized } from "@/db";
+import { coachReviews, criteriaChecks, getDb, notes, oneOnOnes, students, type OneOnOneOrganized } from "@/db";
+import { buildReviewContext } from "@/lib/claude/context/review";
+import { checkMessages, checkSystem } from "@/lib/claude/prompts/check";
+import { draftMessages, draftSystem } from "@/lib/claude/prompts/draft";
+import { draftSchema, type CheckResult, type Draft } from "@/lib/claude/schemas";
+import { CRITERIA_POINTS, KATA, type CriteriaStatus } from "@/lib/criteria";
 import { callScene } from "@/lib/claude/call";
 import { ONE_ON_ONE_SYSTEM, oneOnOneMessages } from "@/lib/claude/prompts/one-on-one";
 import { checkPastDate, type DateProblem } from "@/lib/dates";
@@ -128,4 +133,164 @@ export async function clearOneOnOne(dateIn: unknown): Promise<ClearResult> {
     return { ok: false, message: "消せませんでした。もう一度ためしてください" };
   }
   return { ok: true };
+}
+
+
+// ---- 到達基準のチェック（先生が付ける） ----
+
+const STATUSES: CriteriaStatus[] = ["not_yet", "sometimes", "stable"];
+
+export type SaveCriteriaResult = { ok: true } | { ok: false; message: string };
+
+export async function saveCriteria(valuesIn: unknown): Promise<SaveCriteriaResult> {
+  if (typeof valuesIn !== "object" || valuesIn === null) return { ok: false, message: "もう一度ためしてください" };
+  const values = valuesIn as Record<string, unknown>;
+  const studentId = await demoStudentId();
+  if (!studentId) return { ok: false, message: "まだ準備ができていません" };
+  const rows = CRITERIA_POINTS.flatMap((p) => {
+    const v = values[p.key];
+    return typeof v === "string" && STATUSES.includes(v as CriteriaStatus)
+      ? [{ studentId, kata: KATA, pointKey: p.key, pointLabel: p.label, status: v as CriteriaStatus }]
+      : [];
+  });
+  if (rows.length === 0) return { ok: false, message: "どれか1つは選んでください" };
+  try {
+    for (const row of rows) {
+      await getDb()
+        .insert(criteriaChecks)
+        .values(row)
+        .onConflictDoUpdate({
+          target: [criteriaChecks.studentId, criteriaChecks.kata, criteriaChecks.pointKey],
+          set: { status: row.status, pointLabel: row.pointLabel, checkedAt: sql`now()` },
+        });
+    }
+  } catch (error) {
+    console.error("[review] 到達基準の保存に失敗しました", error);
+    return { ok: false, message: "保存できませんでした。もう一度ためしてください" };
+  }
+  return { ok: true };
+}
+
+// ---- 下書き（場面4）・点検（場面5）・承認 ----
+
+const DEMO_NOTE_DATE = "2026-11-01"; // デモ応答（保存済みの下書き）は、この日の見本ノートのためのもの
+
+export type DraftResult =
+  | { ok: true; draft: Draft; source: "claude" | "demo"; usable: boolean }
+  | { ok: false; message: string };
+
+export async function generateDraft(noteIdIn: unknown): Promise<DraftResult> {
+  const noteId = await ownNoteId(noteIdIn);
+  if (!noteId) return { ok: false, message: "ノートが見つかりません" };
+  const ctx = await buildReviewContext(noteId);
+  if (!ctx) return { ok: false, message: "ノートが見つかりません" };
+
+  const result = await callScene("draft", { system: draftSystem(ctx), messages: draftMessages(ctx) });
+  // デモ応答は見本ノートの下書きなので、ほかのノートには使わない（空の下書きにして、先生が手で書く）
+  const usable = result.source === "claude" || ctx.note.date === DEMO_NOTE_DATE;
+  const draft = usable ? clampDraft(result.data) : emptyDraft();
+  try {
+    await getDb()
+      .insert(coachReviews)
+      .values({ noteId, draft, checkResult: null })
+      // 承認済みなら final と status はそのまま（届いている内容は変えない）。下書きと点検だけ新しくする
+      .onConflictDoUpdate({ target: coachReviews.noteId, set: { draft, checkResult: null } });
+  } catch (error) {
+    console.error("[review] 下書きの保存に失敗しました", error);
+    return { ok: false, message: "保存できませんでした。もう一度ためしてください" };
+  }
+  return { ok: true, draft, source: result.source, usable };
+}
+
+export type CheckRunResult = { ok: true; check: CheckResult; source: "claude" | "demo" } | { ok: false; message: string };
+
+// 先生が画面で直している途中の下書きを点検する（保存した下書きではなく、いま画面にあるもの）
+export async function runCheck(noteIdIn: unknown, draftIn: unknown): Promise<CheckRunResult> {
+  const noteId = await ownNoteId(noteIdIn);
+  const parsed = draftSchema.safeParse(draftIn);
+  if (!noteId || !parsed.success) return { ok: false, message: "もう一度下書きを作ってください" };
+  const ctx = await buildReviewContext(noteId);
+  if (!ctx) return { ok: false, message: "ノートが見つかりません" };
+
+  const draft = clampDraft(parsed.data);
+  const result = await callScene("check", { system: checkSystem(ctx), messages: checkMessages(ctx, draft) });
+  try {
+    await getDb().update(coachReviews).set({ checkResult: result.data }).where(eq(coachReviews.noteId, noteId));
+  } catch (error) {
+    console.error("[review] 点検の保存に失敗しました", error);
+  }
+  return { ok: true, check: result.data, source: result.source };
+}
+
+export type ApproveResult = { ok: true; approvedAt: string } | { ok: false; message: string };
+
+// 先生が直した内容で承認する。承認したものだけが保護者・道場生に届く
+export async function approveReview(noteIdIn: unknown, finalIn: unknown): Promise<ApproveResult> {
+  const noteId = await ownNoteId(noteIdIn);
+  const parsed = draftSchema.safeParse(finalIn);
+  if (!noteId || !parsed.success) return { ok: false, message: "内容を確かめてください" };
+  const final = clampDraft(parsed.data);
+  if (!final.guardianLetter.coachWords.trim() && final.themeCandidates.length === 0) {
+    return { ok: false, message: "お便りか次回テーマを書いてから承認してください" };
+  }
+  try {
+    const [row] = await getDb()
+      .insert(coachReviews)
+      .values({ noteId, final, status: "approved", approvedAt: sql`now()` })
+      .onConflictDoUpdate({ target: coachReviews.noteId, set: { final, status: "approved", approvedAt: sql`now()` } })
+      .returning({ approvedAt: coachReviews.approvedAt });
+    return { ok: true, approvedAt: row.approvedAt?.toISOString() ?? new Date().toISOString() };
+  } catch (error) {
+    console.error("[review] 承認に失敗しました", error);
+    return { ok: false, message: "保存できませんでした。もう一度ためしてください" };
+  }
+}
+
+async function ownNoteId(value: unknown): Promise<number | null> {
+  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) return null;
+  const [row] = await getDb()
+    .select({ id: notes.id })
+    .from(notes)
+    .innerJoin(students, eq(notes.studentId, students.id))
+    .where(and(eq(notes.id, value), eq(students.slug, DEMO_STUDENT)))
+    .limit(1);
+  return row?.id ?? null;
+}
+
+// 長さと数の上限をそろえる
+function clampDraft(d: Draft): Draft {
+  const str = (s: string, n = 300) => s.trim().slice(0, n);
+  const list = (xs: string[], n = 6, m = 200) => xs.map((x) => str(x, m)).filter(Boolean).slice(0, n);
+  return {
+    summary: str(d.summary, 600),
+    praise: list(d.praise),
+    criteriaMatch: d.criteriaMatch
+      .filter((c) => CRITERIA_POINTS.some((p) => p.key === c.pointKey))
+      .map((c) => ({ pointKey: c.pointKey, pointLabel: CRITERIA_POINTS.find((p) => p.key === c.pointKey)!.label, comment: str(c.comment) }))
+      .slice(0, 10),
+    themeCandidates: list(d.themeCandidates, 3, 80),
+    homePractice: d.homePractice.map((h) => ({ menu: str(h.menu, 200), aim: str(h.aim, 200) })).filter((h) => h.menu).slice(0, 3),
+    safety: list(d.safety),
+    planRevision: str(d.planRevision, 600),
+    guardianLetter: {
+      coachWords: str(d.guardianLetter.coachWords),
+      watchPoints: list(d.guardianLetter.watchPoints, 3),
+      cheerHints: list(d.guardianLetter.cheerHints, 3),
+      effort: str(d.guardianLetter.effort),
+      model: str(d.guardianLetter.model),
+    },
+  };
+}
+
+function emptyDraft(): Draft {
+  return {
+    summary: "",
+    praise: [],
+    criteriaMatch: CRITERIA_POINTS.map((p) => ({ pointKey: p.key, pointLabel: p.label, comment: "" })),
+    themeCandidates: [],
+    homePractice: [],
+    safety: [],
+    planRevision: "",
+    guardianLetter: { coachWords: "", watchPoints: [], cheerHints: [], effort: "", model: "" },
+  };
 }

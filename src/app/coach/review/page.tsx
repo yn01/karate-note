@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { Card, PageTitle } from "@/components/ui";
+import { Card, PageTitle, SectionTitle } from "@/components/ui";
 import { getCoachReview } from "@/lib/queries/coach-review";
 import demoInputs from "../../../../data/seed/demo-inputs.json";
+import { CriteriaEditor } from "./CriteriaEditor";
+import { DraftEditor } from "./DraftEditor";
 import { OneOnOneEditor } from "./OneOnOneEditor";
 
-// 整理の呼び出し（最長 20秒×2）に余裕をもたせる
-export const maxDuration = 60;
+// 下書きの呼び出し（最長 150秒）に余裕をもたせる。下書きと点検は別の呼び出し
+export const maxDuration = 200;
 
 const DEMO_STUDENT = "takuya";
 
@@ -29,7 +31,7 @@ async function Review() {
   await connection();
   const data = await getCoachReview(DEMO_STUDENT);
   if (!data) return <Card tone="coach">まだノートがありません。</Card>;
-  const { note, oneOnOne } = data;
+  const { note, oneOnOne, road, plan, criteria, review, questioningSummary } = data;
   const [, m, d] = note.date.split("-").map(Number);
 
   return (
@@ -43,6 +45,7 @@ async function Review() {
           <Row label="今日のテーマ" value={note.theme} />
           <Row label="よかったこと" value={note.good} />
           <Row label="直したいこと" value={note.improve} />
+          <Row label="問いかけのまとめ" value={questioningSummary} />
         </dl>
       </Card>
       <OneOnOneEditor
@@ -56,6 +59,50 @@ async function Review() {
                 organized: oneOnOne.organized,
                 confirmed: oneOnOne.organizedConfirmedAt !== null,
               }
+            : null
+        }
+      />
+
+      <Card tone="coach" aria-labelledby="plan" className="space-y-3 text-sm">
+        <SectionTitle id="plan">黒帯への道のりと育成計画</SectionTitle>
+        <div>
+          <p className="text-xs font-bold text-muted">道場共通：黒帯への道のり</p>
+          <p>
+            いまの帯：{road.current?.name ?? "—"}　→　次の目標：{road.next?.name ?? "—"}
+            {road.next?.kata ? `（審査の形：${road.next.kata}）` : ""}
+          </p>
+        </div>
+        {plan ? (
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-muted">一人ひとり：育成計画</p>
+            <dl className="space-y-1">
+              <Row label="本人の目標" value={plan.selfGoals.join("／")} />
+              <Row label="保護者の願い" value={plan.guardianWish} />
+              <Row label="今期の重点" value={plan.focus} />
+              <Row label="強み" value={plan.strengths.join("／")} />
+            </dl>
+            <p className="pt-1 text-xs font-bold text-muted">マイルストーン（SMART）</p>
+            <ul className="space-y-1">
+              {plan.milestones.map((m) => (
+                <li key={m.dueLabel}>
+                  <span className="font-bold">{m.dueLabel}</span>：{m.description}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <p className="text-muted">育成計画はまだありません。</p>
+        )}
+      </Card>
+
+      <CriteriaEditor criteria={criteria} />
+
+      <DraftEditor
+        noteId={note.id}
+        criteria={criteria}
+        saved={
+          review
+            ? { draft: review.draft, final: review.final, check: review.checkResult, approved: review.status === "approved" }
             : null
         }
       />
