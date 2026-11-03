@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     "/student/note": ["./public/samples/sample-note-11-01.png"],
     // 指導者の知見（skills）をプロンプトに読み込む
     "/student/question": ["./skills/**/*.md"],
+    "/coach/review": ["./skills/**/*.md"],
   },
   // トップは道場生ホームへ（デモの入口）
   async redirects() {
