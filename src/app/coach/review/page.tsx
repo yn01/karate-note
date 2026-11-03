@@ -2,6 +2,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { Card, PageTitle, SectionTitle } from "@/components/ui";
+import { hashDraft } from "@/lib/draft-hash";
 import { getCoachReview } from "@/lib/queries/coach-review";
 import demoInputs from "../../../../data/seed/demo-inputs.json";
 import { CriteriaEditor } from "./CriteriaEditor";
@@ -100,14 +101,28 @@ async function Review() {
       <DraftEditor
         noteId={note.id}
         criteria={criteria}
-        saved={
-          review
-            ? { draft: review.draft, final: review.final, check: review.checkResult, approved: review.status === "approved" }
-            : null
-        }
+        saved={reviewProps(review)}
       />
     </div>
   );
+}
+
+// 編集の出発点：承認のあとに下書きを作り直していればその下書き、なければ承認した内容、なければ下書き
+function reviewProps(review: NonNullable<Awaited<ReturnType<typeof getCoachReview>>>["review"]) {
+  if (!review) return null;
+  const approved = review.status === "approved";
+  const newer =
+    approved && !!review.draft && !!review.draftUpdatedAt && !!review.approvedAt && review.draftUpdatedAt > review.approvedAt;
+  const base = (newer ? review.draft : (review.final ?? review.draft)) ?? null;
+  if (!base) return null;
+  const hash = hashDraft(base);
+  return {
+    base,
+    check: review.checkResult,
+    checkCurrent: !!review.checkHash && review.checkHash === hash,
+    approved,
+    newerThanApproval: newer,
+  };
 }
 
 function Row({ label, value }: { label: string; value: string | null }) {
