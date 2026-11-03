@@ -20,7 +20,7 @@ const shippori = Shippori_Mincho_B1({
 
 export const metadata: Metadata = {
   title: "空手ノート",
-  description: "道場生・保護者・指導者をつなぐ空手ノート（デモ・架空のデータ）",
+  description: "道場生・保護者・先生をつなぐ空手ノート（デモ・架空のデータ）",
 };
 
 export const viewport: Viewport = {

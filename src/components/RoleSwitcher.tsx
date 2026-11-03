@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { F } from "@/components/ui/Furigana";
 
-// 立場ごとの色：道場生＝藍、保護者＝若竹、指導者＝墨（子どもも押すので、ふりがなを付ける）
+// 立場ごとの色：道場生＝藍、保護者＝若竹、先生（指導者）＝墨（子どもも押すので、ふりがなを付ける）
 const roles = [
   { href: "/student", label: "{道場生|どうじょうせい}", active: "bg-washi text-ai" },
   { href: "/parent", label: "{保護者|ほごしゃ}", active: "bg-washi text-wakatake" },
-  { href: "/coach", label: "{指導者|しどうしゃ}", active: "bg-washi text-sumi" },
+  { href: "/coach", label: "{先生|せんせい}", active: "bg-washi text-sumi" },
 ] as const;
 
 // 画面上部の「道場生／保護者／指導者」の切り替え（ログインなしのデモモード）
