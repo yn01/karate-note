@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { buttonClass, Card, SectionTitle } from "@/components/ui";
 import { VoiceInput } from "@/components/voice/VoiceInput";
 import type { OneOnOneOrganized } from "@/db";
-import { confirmOneOnOne, organizeOneOnOne } from "./actions";
+import { clearOneOnOne, confirmOneOnOne, organizeOneOnOne } from "./actions";
 
 type Props = {
   date: string; // ノートの日（この画面ではノートの日の1対1だけを扱う）
@@ -84,6 +84,30 @@ export function OneOnOneEditor({ date, sampleTranscript, saved }: Props) {
         setConfirmed(true);
       } catch {
         setError("保存できませんでした。もう一度ためしてください");
+      }
+    });
+  };
+
+  const clear = () => {
+    if (!window.confirm("この日の1対1の記録（文字起こしと整理）を消して、やり直します。よろしいですか？")) return;
+    setError(null);
+    startTransition(async () => {
+      try {
+        const r = await clearOneOnOne(date);
+        if (!r.ok) {
+          setError(r.message);
+          return;
+        }
+        setTranscript("");
+        setOrganizedFor("");
+        setInterim("");
+        setId(null);
+        setOrganized(null);
+        setConfirmed(false);
+        setFromDemo(false);
+        setNotice("消しました。最初から入力できます。");
+      } catch {
+        setError("消せませんでした。もう一度ためしてください");
       }
     });
   };
@@ -208,6 +232,17 @@ export function OneOnOneEditor({ date, sampleTranscript, saved }: Props) {
             {confirmed ? "ノートの下書きを作るときに使います。" : ""}
           </p>
         </div>
+      )}
+
+      {(id !== null || transcript) && (
+        <button
+          type="button"
+          disabled={pending}
+          onClick={clear}
+          className="w-full py-2 text-sm text-shu underline disabled:opacity-50"
+        >
+          この日の記録を消してやり直す
+        </button>
       )}
     </Card>
   );

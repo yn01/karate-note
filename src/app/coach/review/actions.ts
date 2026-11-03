@@ -110,3 +110,22 @@ async function demoStudentId(): Promise<number | null> {
   const [s] = await getDb().select({ id: students.id }).from(students).where(eq(students.slug, DEMO_STUDENT)).limit(1);
   return s?.id ?? null;
 }
+
+export type ClearResult = { ok: true } | { ok: false; message: string };
+
+// その日の1対1の記録（文字起こしと整理）を消して、やり直せるようにする
+export async function clearOneOnOne(dateIn: unknown): Promise<ClearResult> {
+  const date = typeof dateIn === "string" ? dateIn : "";
+  if (checkPastDate(date)) return { ok: false, message: "日付を確かめてください" };
+  const studentId = await demoStudentId();
+  if (!studentId) return { ok: false, message: "まだ準備ができていません" };
+  try {
+    await getDb()
+      .delete(oneOnOnes)
+      .where(and(eq(oneOnOnes.studentId, studentId), eq(oneOnOnes.date, date)));
+  } catch (error) {
+    console.error("[one-on-one] 消すのに失敗しました", error);
+    return { ok: false, message: "消せませんでした。もう一度ためしてください" };
+  }
+  return { ok: true };
+}
