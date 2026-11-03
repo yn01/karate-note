@@ -151,6 +151,7 @@ export const questionSessions = pgTable("question_sessions", {
   turns: jsonb("turns").$type<QuestionTurn[]>().notNull(),
   summary: text("summary"), // 本人が確かめて直したまとめ
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 // 指導者の確認（下書き → 点検 → 指導者が直して承認）

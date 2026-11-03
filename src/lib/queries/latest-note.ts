@@ -17,7 +17,7 @@ export async function getLatestNote(slug: string) {
     .innerJoin(students, eq(notes.studentId, students.id))
     .leftJoin(questionSessions, eq(questionSessions.noteId, notes.id))
     .where(eq(students.slug, slug))
-    .orderBy(desc(notes.date))
+    .orderBy(desc(notes.date), desc(notes.id))
     .limit(1);
   return row ?? null;
 }

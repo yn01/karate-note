@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
-import type { QuestionTurn } from "@/db";
 import type { NextQuestion } from "@/lib/claude/schemas";
-import { askNext, saveQuestioning } from "./actions";
+import { askNext, saveQuestioning, type SignedTurn } from "./actions";
 
 type Props = { noteId: number; savedSummary: string | null };
 
@@ -13,20 +12,23 @@ type Phase = "start" | "asking" | "answering" | "summary" | "saved";
 // 画面3：オープン しつもん → えらんで こたえる しつもん（クローズド）→ まとめ
 export function QuestionFlow({ noteId, savedSummary }: Props) {
   const [phase, setPhase] = useState<Phase>("start");
-  const [turns, setTurns] = useState<QuestionTurn[]>([]);
+  const [turns, setTurns] = useState<SignedTurn[]>([]);
   const [current, setCurrent] = useState<NextQuestion | null>(null);
   const [fromDemo, setFromDemo] = useState(false);
   const [summary, setSummary] = useState("");
   const [freeText, setFreeText] = useState(false);
+  const [draft, setDraft] = useState(""); // 送るまで答えを残す（失敗しても書き直さなくてよいように）
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const bottom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    if (turns.length === 0) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    bottom.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "end" });
   }, [turns.length, phase]);
 
-  const ask = (history: QuestionTurn[]) => {
+  const ask = (history: SignedTurn[]) => {
     setError(null);
     setPhase("asking");
     startTransition(async () => {
@@ -46,9 +48,10 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
           setPhase("summary");
           return;
         }
-        setTurns([...history, { role: "claude", type: q.type, text: q.text, choices: q.choices }]);
+        if (result.turn) setTurns([...history, result.turn]);
         setCurrent(q);
         setFreeText(q.type === "open");
+        setDraft("");
         setPhase("answering");
       } catch {
         setError("うまく つながらなかったよ。もういちど ためしてね");
@@ -83,6 +86,9 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
     setTurns([]);
     setCurrent(null);
     setSummary("");
+    setDraft("");
+    setFreeText(false);
+    setError(null);
     setFromDemo(false);
     setPhase("start");
   };
@@ -123,11 +129,17 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
         <ol className="space-y-3" aria-label="やりとり">
           {turns.map((t, i) =>
             t.role === "claude" ? (
-              <li key={i} className="mr-8 rounded-2xl rounded-tl-none bg-white p-4 shadow-sm">
+              <li
+                key={i}
+                className="mr-8 rounded-2xl rounded-tl-none bg-white p-4 shadow-sm"
+                aria-live={i === turns.length - 1 ? "polite" : undefined}
+              >
                 <p className="text-xs font-bold text-ink/60">
                   {t.type === "closed" ? "えらんで こたえる しつもん（クローズド）" : "オープン しつもん"}
                 </p>
-                <p className="mt-1 text-lg leading-relaxed">{t.text}</p>
+                <p id={i === turns.length - 1 ? "current-question" : undefined} className="mt-1 text-lg leading-relaxed">
+                  {t.text}
+                </p>
               </li>
             ) : (
               <li key={i} className="ml-8 rounded-2xl rounded-tr-none bg-ink p-4 text-white">
@@ -144,10 +156,10 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
         <div className="space-y-3">
           {current.type === "closed" && !freeText && (
             <>
-              <div className="grid gap-2">
-                {current.choices.map((c) => (
+              <div role="group" aria-labelledby="current-question" className="grid gap-2">
+                {current.choices.map((c, i) => (
                   <button
-                    key={c}
+                    key={i}
                     type="button"
                     disabled={pending}
                     onClick={() => answer(c)}
@@ -166,9 +178,7 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                const data = new FormData(e.currentTarget);
-                answer(String(data.get("answer") ?? ""));
-                e.currentTarget.reset();
+                answer(draft);
               }}
               className="space-y-2"
             >
@@ -176,6 +186,9 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
                 <span className="text-sm font-bold text-ink/80">こたえ（マイクの ボタンで はなしても いいよ）</span>
                 <textarea
                   name="answer"
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  aria-describedby="current-question"
                   rows={2}
                   maxLength={200}
                   required
