@@ -19,8 +19,12 @@ body {
   font-family: var(--font-sans);
 }
 
-/* ふりがな：読みは小さく、行の高さを保つ */
+/* ふりがな：読みは小さく。読みが漢字より長いときに漢字の間をあけない（iPhone の既定は字間を広げる） */
+ruby {
+  ruby-align: center;
+}
 ruby rt {
+  ruby-align: center;
   font-size: max(0.5em, 9px);
   font-weight: 400;
   letter-spacing: 0;

@@ -40,12 +40,11 @@ export function BeltRoad({ road, currentId, nextId, nextExam }: Props) {
                 {isNext && b.kata && (
                   <p className="text-xs text-muted">
                     <F>{`{審査|しんさ}の{形|かた}：${kataLabel(b.kata)}`}</F>
-                    {nextExam && (
-                      <>
-                        {" ／ "}
-                        <F>{`${kidsMonth(nextExam.dueDate)}の{審査|しんさ}`}</F>
-                      </>
-                    )}
+                  </p>
+                )}
+                {isNext && nextExam && (
+                  <p className="text-xs text-muted">
+                    <F>{`${kidsMonth(nextExam.dueDate)}の{審査|しんさ}`}</F>
                   </p>
                 )}
               </div>
