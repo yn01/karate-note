@@ -40,7 +40,11 @@ export async function buildQuestioningContext(noteId: number): Promise<Questioni
       .where(and(eq(oneOnOnes.studentId, note.studentId), eq(oneOnOnes.date, note.date)))
       .orderBy(desc(oneOnOnes.createdAt))
       .limit(1),
-    Promise.all([loadSkill("questioning.md"), loadSkill("kata/heian-nidan.md")]),
+    Promise.all([
+      loadSkill("questioning.md"),
+      // 到達基準（まだ／ときどき／安定）の節は渡さない。段階のことばを子どもに使わないため
+      loadSkill("kata/heian-nidan.md", { excludeSections: ["到達基準"] }),
+    ]),
   ]);
 
   const next = planMilestones.find((m) => m.dueDate >= today) ?? planMilestones.at(-1);
