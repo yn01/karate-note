@@ -8,7 +8,9 @@ export type SceneConfig = {
   model: string;
   effort: Effort;
   maxTokens: number;
-  timeoutMs: number;
+  timeoutMs: number; // 1回の試行の時間切れ
+  // 再試行の回数。待ち時間の最長は timeoutMs ×（maxRetries＋1）。Vercel の関数の上限（300秒）より短くする
+  maxRetries: number;
   // 断られたとき（refusal）に server-side fallback を使うか。Haiku は対象外
   serverFallback: boolean;
 };
@@ -19,7 +21,8 @@ export const SCENES: Record<SceneName, SceneConfig> = {
     model: "claude-opus-5-5", // 手書きの画像を読む力
     effort: "low",
     maxTokens: 4000,
-    timeoutMs: 60_000,
+    timeoutMs: 45_000,
+    maxRetries: 1,
     serverFallback: true,
   },
   oneOnOne: {
@@ -27,7 +30,8 @@ export const SCENES: Record<SceneName, SceneConfig> = {
     model: "claude-haiku-5-5", // 短いテキストの整理。速さ優先
     effort: "low",
     maxTokens: 4000,
-    timeoutMs: 30_000,
+    timeoutMs: 20_000,
+    maxRetries: 1,
     serverFallback: false,
   },
   questioning: {
@@ -35,7 +39,8 @@ export const SCENES: Record<SceneName, SceneConfig> = {
     model: "claude-sonnet-5-5", // 子どもを待たせない＋答えを教えない指示を守る力
     effort: "low",
     maxTokens: 4000,
-    timeoutMs: 30_000,
+    timeoutMs: 20_000,
+    maxRetries: 1,
     serverFallback: true,
   },
   draft: {
@@ -43,7 +48,8 @@ export const SCENES: Record<SceneName, SceneConfig> = {
     model: "claude-opus-5-5", // 育成計画と形の知見を踏まえて考える
     effort: "high",
     maxTokens: 16000,
-    timeoutMs: 180_000,
+    timeoutMs: 150_000,
+    maxRetries: 0,
     serverFallback: true,
   },
   check: {
@@ -51,7 +57,8 @@ export const SCENES: Record<SceneName, SceneConfig> = {
     model: "claude-opus-5-5", // 下書きとは別の呼び出しで点検する
     effort: "medium",
     maxTokens: 8000,
-    timeoutMs: 120_000,
+    timeoutMs: 90_000,
+    maxRetries: 0,
     serverFallback: true,
   },
 };

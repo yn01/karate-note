@@ -37,3 +37,22 @@
 ### 次にやること
 - T03 Claude の土台（モデルの設定・1日の呼び出し上限・保存済みのデモ応答）。
 - 作者：skills/kata/heian-nidan.md と skills/questioning.md（11/4 朝まで）。
+
+## 11/03 T03 Claude の土台
+
+### 決めたこと
+- モデルの割り当て（作者確認：品質寄り）：1 読み取り・4 下書き・5 点検＝Opus 5.5、2 整理＝Haiku 5.5、3 問いかけ＝Sonnet 5.5。設定は src/lib/claude/models.ts の1か所。
+- 5場面とも共通の入口 `callScene()` を通す。デモモード・キーなし・上限・障害・断り・形の不一致ではデモ応答（data/seed/demo-responses.json、スキーマで検証）。
+- 上限は「API まで届いた呼び出し」を claude_calls で日本時間の日ごとに数える。中身（プロンプト・出力）は残さない。
+- 断られたときは Opus・Sonnet でサーバー側の fallback（`fallbacks: "default"`）を使う。
+- 到達基準の状態は Claude に出させず、指導者が付けた criteria_checks を結合する（レビュー指摘で変更）。
+- 点検のデモ応答は「点検できなかった」。点検していない下書きが「問題なし」に見えないようにする。
+- 待ち時間の最長＝timeoutMs×（maxRetries＋1）を Vercel の関数の上限より短くする（下書き150秒・再試行なし）。
+
+### 詰まったこと
+- `messages.parse()` は形が合わないと例外を投げ、断りや途中切れと区別できない → `create()` ＋自前の JSON.parse・safeParse にした。
+- server-only を読むスクリプトは `tsx --conditions=react-server` が必要。
+
+### 次にやること
+- T04 ノートの取り込み＋読み取り（画面2・場面1）。デモ応答のときは「よみとれなかったので見本を出しています」と出す。
+- 作者：skills/kata/heian-nidan.md と skills/questioning.md（11/4 朝まで）。

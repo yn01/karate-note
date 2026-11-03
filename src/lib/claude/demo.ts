@@ -1,4 +1,6 @@
 // 保存済みのデモ応答（data/seed/demo-responses.json）。上限超過・障害・断り・デモモードのときに返す。
+// 画面側の約束：source === "demo" のときは「保存済みのデモ応答です」と必ず出す（読み取りなら「よみとれなかったので見本を出しています」）。
+import "server-only";
 import demo from "../../../data/seed/demo-responses.json";
 import type { SceneName } from "./models";
 import { sceneSchemas, type SceneOutput } from "./schemas";

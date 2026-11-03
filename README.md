@@ -78,10 +78,12 @@ Claude を呼ぶ場面は5つです。モデルと effort は [src/lib/claude/mo
 
 - 5場面はすべて共通の入口 `callScene()`（[src/lib/claude/call.ts](src/lib/claude/call.ts)）を通ります。
 - 次のときは Claude を呼ばず（または呼んだ結果を使わず）、**保存済みのデモ応答**（[data/seed/demo-responses.json](data/seed/demo-responses.json)）で画面を続けます。
-  - 1日（日本時間）に Claude が答えた回数が `CLAUDE_DAILY_LIMIT`（既定 200）に達したとき。回数は DB の `claude_calls` で数えます（プロンプトや出力の中身は残しません）
+  - 1日（日本時間）に API まで届いた呼び出しの回数が `CLAUDE_DAILY_LIMIT`（既定 200）に達したとき。回数は DB の `claude_calls` で数えます（プロンプトや出力の中身は残しません）
   - API の障害・時間切れ・混雑、出力が形に合わないとき、断られたとき（Opus・Sonnet はサーバー側の fallback で別のモデルが先に試します）
   - `ANTHROPIC_API_KEY` がないとき、`CLAUDE_MODE=demo` のとき
 - API キーはサーバー側の環境変数だけで読み、ブラウザに渡るコードからは読み込めません（`server-only`）。
+- デモ応答で続けたときは、画面に「保存済みのデモ応答です」と出します。点検（場面5）のデモ応答は「点検できなかった」として返すので、点検していない下書きが「問題なし」に見えることはありません。
+- 到達基準の状態（まだ／ときどき／安定）は指導者が付けたものだけを使います。Claude は状態を判定せず、照らし合わせのコメントだけを書きます。
 - Claude の出力（下書き）は、指導者が直して承認するまで道場生と保護者には届きません。
 
 ## 技術スタック

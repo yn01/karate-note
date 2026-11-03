@@ -31,8 +31,14 @@ export const nextQuestionSchema = z.object({
 export const draftSchema = z.object({
   summary: z.string(),
   praise: z.array(z.string()),
+  // 到達基準の状態（まだ／ときどき／安定）は指導者が付けたもの（criteria_checks）をサーバー側で結合する。
+  // Claude は状態を判定せず、ノートや1対1のことばとの照らし合わせ（comment）だけを書く。
   criteriaMatch: z.array(
-    z.object({ pointLabel: z.string(), status: z.string(), comment: z.string() }),
+    z.object({
+      pointKey: z.string().describe("到達基準の要点のキー（入力で渡したものをそのまま）"),
+      pointLabel: z.string(),
+      comment: z.string().describe("ノート・問いかけ・先生のことばとの照らし合わせ。出来の判定はしない"),
+    }),
   ),
   themeCandidates: z.array(z.string()),
   homePractice: z.array(z.object({ menu: z.string(), aim: z.string() })),

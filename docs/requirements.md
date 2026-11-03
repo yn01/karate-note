@@ -96,6 +96,6 @@
 
 ## 8. 守り
 
-- 1日の Claude 呼び出し上限（`claude_calls` で数える。`CLAUDE_DAILY_LIMIT`、既定200）。超えたら保存済みのデモ応答（data/seed/demo-responses.json）を返す。`CLAUDE_MODE=demo` で常にデモ応答。
+- 1日の Claude 呼び出し上限（`claude_calls` で数える。`CLAUDE_DAILY_LIMIT`、既定200）。数えるのは API まで届いた呼び出し。超えたら保存済みのデモ応答（data/seed/demo-responses.json）を返し、画面に「保存済みのデモ応答です」と出す。`CLAUDE_MODE=demo` で常にデモ応答。
 - API 障害時も、保存済みのデモ応答で一周できる。
 - 公開は Vercel。審査員がログインなしで触れるデモモード。
