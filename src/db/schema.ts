@@ -231,3 +231,17 @@ export const claudeCalls = pgTable(
   },
   (t) => [index("claude_calls_day_outcome").on(t.day, t.outcome)],
 );
+
+// 審査予定（先生が決める）。道場生のホームの「つぎの目標」に出す
+export const examPlans = pgTable("exam_plans", {
+  id: serial("id").primaryKey(),
+  studentId: integer("student_id")
+    .notNull()
+    .unique()
+    .references(() => students.id, { onDelete: "cascade" }),
+  examMonth: date("exam_month").notNull(), // 審査の月（その月の1日）
+  targetBeltId: integer("target_belt_id")
+    .notNull()
+    .references(() => belts.id),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

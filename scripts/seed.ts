@@ -10,6 +10,7 @@ import {
   coachReviews,
   criteriaChecks,
   developmentPlans,
+  examPlans,
   milestones,
   notes,
   oneOnOnes,
@@ -89,7 +90,7 @@ async function main() {
 
   // 全テーブルを空にし、id も 1 から振り直す（何度流しても同じ id になる）
   await db.execute(
-    sql`TRUNCATE ${themeSelections}, ${coachReviews}, ${questionSessions}, ${notes}, ${oneOnOnes}, ${criteriaChecks}, ${milestones}, ${developmentPlans}, ${students}, ${belts} RESTART IDENTITY CASCADE`,
+    sql`TRUNCATE ${examPlans}, ${themeSelections}, ${coachReviews}, ${questionSessions}, ${notes}, ${oneOnOnes}, ${criteriaChecks}, ${milestones}, ${developmentPlans}, ${students}, ${belts} RESTART IDENTITY CASCADE`,
   );
 
   // 帯：白帯（無級）→ 10級〜1級 → 黒帯（初段）
@@ -204,6 +205,16 @@ async function main() {
     })),
   );
 
+  // 審査予定（先生が決めたもの）
+  const exams = load<{ plans: { studentSlug: string; examMonth: string; targetKyu: number }[] }>("exam-plans.json");
+  await db.insert(examPlans).values(
+    exams.plans.map((e) => {
+      const beltId = beltIdByKyu.get(e.targetKyu);
+      if (!beltId) throw new Error(`${e.targetKyu}級の帯がありません`);
+      return { studentId: studentId(e.studentSlug), examMonth: e.examMonth, targetBeltId: beltId };
+    }),
+  );
+
   const counts = {
     belts: insertedBelts.length,
     students: insertedStudents.length,
@@ -211,6 +222,7 @@ async function main() {
     notes: notesJson.notes.length,
     criteriaChecks: checks.checks.length,
     themeSelections: themes.selections.length,
+    examPlans: exams.plans.length,
   };
   console.log("シード完了（架空の合成データ）", counts);
 }
