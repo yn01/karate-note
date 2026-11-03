@@ -37,7 +37,7 @@ export function reviewContextText(ctx: ReviewContext): string {
     .join("\n");
 
   return `<student>
-${safe(ctx.student.name)}（${safe(ctx.student.grade)}）　いまの帯：${safe(ctx.student.belt)}　次の目標の帯：${safe(ctx.student.nextBelt ?? "")}
+${safe(ctx.student.name)}${safe(ctx.student.honorific)}（${safe(ctx.student.grade)}。文中ではこの呼び方を使う）　いまの帯：${safe(ctx.student.belt)}　次の目標の帯：${safe(ctx.student.nextBelt ?? "")}
 </student>
 
 <note date="${ctx.note.date}">
