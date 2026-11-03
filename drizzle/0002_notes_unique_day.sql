@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "notes_student_date" ON "notes" USING btree ("student_id","date");
