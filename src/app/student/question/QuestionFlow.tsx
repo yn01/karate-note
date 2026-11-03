@@ -141,8 +141,8 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
                 <p className="text-xs font-bold text-muted">
                   <F>
                     {t.type === "closed"
-                      ? "{選|えら}んで{答|こた}える{質問|しつもん}（クローズド）"
-                      : "{自由|じゆう}に{答|こた}える{質問|しつもん}（オープン）"}
+                      ? "{選|えら}んで{答|こた}える{質問|しつもん}"
+                      : "{自由|じゆう}に{答|こた}える{質問|しつもん}"}
                   </F>
                 </p>
                 <p id={i === turns.length - 1 ? "current-question" : undefined} className="mt-1 text-lg leading-relaxed">
@@ -174,7 +174,7 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
                     key={i}
                     type="button"
                     disabled={pending}
-                    onClick={() => answer(c)}
+                    onClick={() => answer(stripFurigana(c))}
                     className="rounded border-2 border-sumi bg-paper px-4 py-3 text-left text-lg font-bold disabled:opacity-50"
                   >
                     <F>{c}</F>

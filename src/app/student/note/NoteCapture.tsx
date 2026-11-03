@@ -61,7 +61,7 @@ export function NoteCapture() {
           preview,
         });
       } catch {
-        setError("うまく送れませんでした。もう一度ためしてね");
+        setError("うまく{送|おく}れませんでした。もう{一度|いちど}ためしてね");
         setStep({ name: "choose" });
       }
     });
@@ -76,7 +76,7 @@ export function NoteCapture() {
       form.set("image", blob, "note.jpg");
       read(form, URL.createObjectURL(blob), "photo");
     } catch {
-      setError("この写真は読めませんでした。ほかの写真でためしてね");
+      setError("この{写真|しゃしん}は{読|よ}めませんでした。ほかの{写真|しゃしん}でためしてね");
     } finally {
       if (fileInput.current) fileInput.current.value = "";
     }
@@ -104,7 +104,7 @@ export function NoteCapture() {
         }
         setStep({ name: "saved", date: result.date });
       } catch {
-        setError("保存できませんでした。もう一度ためしてね");
+        setError("{保存|ほぞん}できませんでした。もう{一度|いちど}ためしてね");
       }
     });
   };

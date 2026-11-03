@@ -1,13 +1,4 @@
 // 帯の表示。道場生向けの文はふりがなの書き方（{漢字|よみ}）で返す
-const colorReading: Record<string, string> = {
-  白色: "しろ",
-  水色: "みずいろ",
-  黄色: "きいろ",
-  緑色: "みどり",
-  紫色: "むらさき",
-  茶色: "ちゃいろ",
-  黒色: "くろ",
-};
 // 帯に書く色の名前（「水色帯」の「水色」。「黄色」は「黄」にしない）
 const colorName: Record<string, string> = {
   白色: "白",
@@ -45,8 +36,9 @@ export function beltLabel(b: BeltLike): string {
   if (b.rankType === "start") return "{白帯|しろおび}（{無級|むきゅう}）";
   if (b.rankType === "dan") return "{黒帯|くろおび}（{初段|しょだん}）";
   const name = b.color ? colorName[b.color] ?? b.color : "";
-  const reading = colorNameReading[name] ?? (b.color ? colorReading[b.color] : "");
-  return `${b.kyu}{級|きゅう}・{${name}|${reading}}{帯|おび}`;
+  const reading = colorNameReading[name];
+  // 読みがわからない色は、印を付けずにそのまま出す
+  return `${b.kyu}{級|きゅう}・${reading ? `{${name}|${reading}}` : name}{帯|おび}`;
 }
 
 export function beltHex(color: string | null): string {
@@ -59,10 +51,18 @@ export function kidsMonth(isoDate: string): string {
   return `${y}{年|ねん}${m}{月|がつ}`;
 }
 
-// "2026-11-01" → "11{月|がつ}1{日|にち}"
+// 日にちの読み（1日＝ついたち など、特別な読みがあるもの）
+const dayReading: Record<number, string> = {
+  1: "ついたち", 2: "ふつか", 3: "みっか", 4: "よっか", 5: "いつか",
+  6: "むいか", 7: "なのか", 8: "ようか", 9: "ここのか", 10: "とおか",
+  14: "じゅうよっか", 20: "はつか", 24: "にじゅうよっか",
+};
+
+// "2026-11-01" → "11{月|がつ}{1日|ついたち}"
 export function kidsDay(isoDate: string): string {
   const [, m, d] = isoDate.split("-").map(Number);
-  return `${m}{月|がつ}${d}{日|にち}`;
+  const day = dayReading[d] ? `{${d}日|${dayReading[d]}}` : `${d}{日|にち}`;
+  return `${m}{月|がつ}${day}`;
 }
 
 // 形の名前の読み（belts.json の形）

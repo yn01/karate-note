@@ -2,22 +2,17 @@
 
 import { useEffect, useState } from "react";
 
-const KEY = "karate-note:furigana";
+export const FURIGANA_KEY = "karate-note:furigana";
 
-// ふりがなの あり／なし。<html data-furigana> を切り替える（保存できないときは「あり」のまま）
+// ふりがなの あり／なし。設定は <html data-furigana> に持つ。
+// 最初の値は layout の head のスクリプトが描画の前に入れるので、読みが一瞬出ることはない。
+// ボタンの表示は、ハイドレーションのあとで その値に合わせる（保存できないときは「あり」のまま）
 export function FuriganaToggle() {
   const [on, setOn] = useState(true);
 
   useEffect(() => {
-    let saved: string | null = null;
-    try {
-      saved = window.localStorage.getItem(KEY);
-    } catch {}
-    if (saved === "off") {
-      document.documentElement.dataset.furigana = "off";
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- 保存した設定を最初の表示のあとで読む
-      setOn(false);
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 描画の前に入った設定にボタンを合わせる
+    setOn(document.documentElement.dataset.furigana !== "off");
   }, []);
 
   const toggle = () => {
@@ -25,7 +20,7 @@ export function FuriganaToggle() {
     setOn(next);
     document.documentElement.dataset.furigana = next ? "on" : "off";
     try {
-      window.localStorage.setItem(KEY, next ? "on" : "off");
+      window.localStorage.setItem(FURIGANA_KEY, next ? "on" : "off");
     } catch {}
   };
 
@@ -34,9 +29,11 @@ export function FuriganaToggle() {
       type="button"
       onClick={toggle}
       aria-pressed={on}
-      className="shrink-0 whitespace-nowrap rounded-full border border-line bg-paper px-3 py-1 text-xs text-muted"
+      className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-xs ${
+        on ? "border-ai bg-ai text-white" : "border-line bg-paper text-muted"
+      }`}
     >
-      ふりがな {on ? "あり" : "なし"}
+      ふりがな
     </button>
   );
 }
