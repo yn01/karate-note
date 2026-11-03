@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { buttonClass, Card, Hanko } from "@/components/ui";
+import { F } from "@/components/ui/Furigana";
 import type { NextQuestion } from "@/lib/claude/schemas";
+import { stripFurigana } from "@/lib/furigana";
 import { askNext, saveQuestioning, type SignedTurn } from "./actions";
 
 type Props = { noteId: number; savedSummary: string | null };
@@ -44,7 +47,7 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
         if (q.done) {
           setTurns(history);
           setCurrent(q);
-          setSummary(q.summary);
+          setSummary(stripFurigana(q.summary));
           setPhase("summary");
           return;
         }
@@ -54,7 +57,7 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
         setDraft("");
         setPhase("answering");
       } catch {
-        setError("うまく つながらなかったよ。もういちど ためしてね");
+        setError("うまくつながりませんでした。もう{一度|いちど}ためしてね");
         setPhase(history.length === 0 ? "start" : "answering");
       }
     });
@@ -77,7 +80,7 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
         }
         setPhase("saved");
       } catch {
-        setError("ほぞん できなかったよ。もういちど ためしてね");
+        setError("{保存|ほぞん}できませんでした。もう{一度|いちど}ためしてね");
       }
     });
   };
@@ -96,30 +99,31 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
   return (
     <div className="space-y-4">
       <p role="status" className="sr-only">
-        {phase === "asking" ? "かんがえて いるよ" : phase === "saved" ? "ほぞん したよ" : ""}
+        {phase === "asking" ? "考えています" : phase === "saved" ? "保存しました" : ""}
       </p>
       {fromDemo && (
-        <p className="rounded-xl bg-amber-100 p-3 text-sm font-bold">いまは みほんの しつもんだよ。</p>
+        <p className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
+          <F>{"いまは{見本|みほん}の{質問|しつもん}です。"}</F>
+        </p>
       )}
       {error && (
-        <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">
-          {error}
+        <p role="alert" className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
+          <F>{error}</F>
         </p>
       )}
 
       {phase === "start" && (
         <div className="space-y-3">
           {savedSummary && (
-            <p className="rounded-xl bg-sky-50 p-3 text-sm">
-              まえに きめたこと：{savedSummary}
+            <p className="border border-line bg-paper p-3 text-sm">
+              <F>{"{前|まえ}に{決|き}めたこと："}</F>
+              {savedSummary}
             </p>
           )}
-          <p className="text-sm text-ink/80">きょうの けいこを いっしょに ふりかえろう。しつもんは 3つまでだよ。</p>
-          <button
-            type="button"
-            onClick={() => ask([])}
-            className="w-full rounded-2xl bg-ink py-4 text-lg font-bold text-white"
-          >
+          <p className="text-sm text-muted">
+            <F>{"{今日|きょう}の{稽古|けいこ}をいっしょにふりかえろう。{質問|しつもん}は3つまでです。"}</F>
+          </p>
+          <button type="button" onClick={() => ask([])} className={buttonClass.primary}>
             はじめる
           </button>
         </div>
@@ -131,18 +135,22 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
             t.role === "claude" ? (
               <li
                 key={i}
-                className="mr-8 rounded-2xl rounded-tl-none bg-white p-4 shadow-sm"
+                className="mr-8 border border-line border-l-4 border-l-ai bg-paper p-4"
                 aria-live={i === turns.length - 1 ? "polite" : undefined}
               >
-                <p className="text-xs font-bold text-ink/60">
-                  {t.type === "closed" ? "えらんで こたえる しつもん（クローズド）" : "オープン しつもん"}
+                <p className="text-xs font-bold text-muted">
+                  <F>
+                    {t.type === "closed"
+                      ? "{選|えら}んで{答|こた}える{質問|しつもん}（クローズド）"
+                      : "{自由|じゆう}に{答|こた}える{質問|しつもん}（オープン）"}
+                  </F>
                 </p>
                 <p id={i === turns.length - 1 ? "current-question" : undefined} className="mt-1 text-lg leading-relaxed">
-                  {t.text}
+                  <F>{t.text}</F>
                 </p>
               </li>
             ) : (
-              <li key={i} className="ml-8 rounded-2xl rounded-tr-none bg-ink p-4 text-white">
+              <li key={i} className="ml-8 bg-ai p-4 text-white">
                 <p className="text-lg">{t.text}</p>
               </li>
             ),
@@ -150,7 +158,11 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
         </ol>
       )}
 
-      {phase === "asking" && <p className="text-center font-bold">かんがえて いるよ…</p>}
+      {phase === "asking" && (
+        <p className="text-center font-bold">
+          <F>{"{考|かんが}えています…"}</F>
+        </p>
+      )}
 
       {phase === "answering" && current && (
         <div className="space-y-3">
@@ -163,14 +175,14 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
                     type="button"
                     disabled={pending}
                     onClick={() => answer(c)}
-                    className="rounded-2xl border-2 border-ink bg-white px-4 py-3 text-left text-lg font-bold disabled:opacity-50"
+                    className="rounded border-2 border-sumi bg-paper px-4 py-3 text-left text-lg font-bold disabled:opacity-50"
                   >
-                    {c}
+                    <F>{c}</F>
                   </button>
                 ))}
               </div>
-              <button type="button" onClick={() => setFreeText(true)} className="w-full py-2 text-sm text-ink/70 underline">
-                じぶんの ことばで こたえる
+              <button type="button" onClick={() => setFreeText(true)} className="w-full py-2 text-sm text-muted underline">
+                <F>{"{自分|じぶん}の{言葉|ことば}で{答|こた}える"}</F>
               </button>
             </>
           )}
@@ -183,7 +195,9 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
               className="space-y-2"
             >
               <label className="block space-y-1">
-                <span className="text-sm font-bold text-ink/80">こたえ（マイクの ボタンで はなしても いいよ）</span>
+                <span className="text-sm font-bold text-muted">
+                  <F>{"{答|こた}え（マイクのボタンで{話|はな}してもいいよ）"}</F>
+                </span>
                 <textarea
                   name="answer"
                   value={draft}
@@ -192,15 +206,11 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
                   rows={2}
                   maxLength={200}
                   required
-                  className="w-full rounded-xl border border-ink/30 bg-white p-3 text-lg"
+                  className="w-full rounded border border-line bg-paper p-3 text-lg"
                 />
               </label>
-              <button
-                type="submit"
-                disabled={pending}
-                className="w-full rounded-2xl bg-ink py-3 text-lg font-bold text-white disabled:opacity-50"
-              >
-                こたえる
+              <button type="submit" disabled={pending} className={buttonClass.primary}>
+                <F>{"{答|こた}える"}</F>
               </button>
             </form>
           )}
@@ -208,41 +218,49 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
       )}
 
       {phase === "summary" && (
-        <div className="space-y-3 rounded-2xl bg-white p-4 shadow-sm">
-          {current?.text && <p className="text-lg">{current.text}</p>}
+        <Card className="space-y-3">
+          {current?.text && (
+            <p className="text-lg">
+              <F>{current.text}</F>
+            </p>
+          )}
           <label className="block space-y-1">
-            <span className="text-sm font-bold text-ink/80">きょう きめたこと（なおしても いいよ）</span>
+            <span className="text-sm font-bold text-muted">
+              <F>{"{今日|きょう}{決|き}めたこと（{直|なお}してもいいよ）"}</F>
+            </span>
             <textarea
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               rows={3}
               maxLength={200}
-              className="w-full rounded-xl border border-ink/30 bg-white p-3 text-lg"
+              className="w-full rounded border border-line bg-paper p-3 text-lg"
             />
           </label>
-          <button
-            type="button"
-            disabled={pending || !summary.trim()}
-            onClick={save}
-            className="w-full rounded-2xl bg-ink py-4 text-lg font-bold text-white disabled:opacity-50"
-          >
-            {pending ? "ほぞん しているよ…" : "これで きめた"}
+          <button type="button" disabled={pending || !summary.trim()} onClick={save} className={buttonClass.primary}>
+            <F>{pending ? "{保存|ほぞん}しています…" : "これで{決|き}めた"}</F>
           </button>
-          <button type="button" disabled={pending} onClick={restart} className="w-full py-2 text-sm text-ink/70 underline">
-            はじめから やりなおす
+          <button type="button" disabled={pending} onClick={restart} className="w-full py-2 text-sm text-muted underline">
+            <F>{"はじめからやり{直|なお}す"}</F>
           </button>
-        </div>
+        </Card>
       )}
 
       {phase === "saved" && (
-        <div className="space-y-3 rounded-2xl bg-white p-5 text-center shadow-sm">
-          <p className="text-lg font-bold">ほぞん したよ！</p>
+        <Card className="space-y-3 text-center">
+          <div className="flex items-center justify-center gap-3">
+            <Hanko size={48}>{"決定"}</Hanko>
+            <p className="font-mincho text-lg font-extrabold">
+              <F>{"{保存|ほぞん}しました"}</F>
+            </p>
+          </div>
           <p className="text-sm">{summary}</p>
-          <p className="text-xs text-ink/60">せんせいが よんで、つぎの テーマを いっしょに かんがえるよ。</p>
-          <Link href="/student" className="block text-sm text-ink/70 underline">
-            ホームに もどる
+          <p className="text-xs text-muted">
+            <F>{"{先生|せんせい}が{読|よ}んで、{次|つぎ}のテーマをいっしょに{考|かんが}えます。"}</F>
+          </p>
+          <Link href="/student" className="block text-sm text-muted underline">
+            <F>{"ホームに{戻|もど}る"}</F>
           </Link>
-        </div>
+        </Card>
       )}
       <div ref={bottom} />
     </div>

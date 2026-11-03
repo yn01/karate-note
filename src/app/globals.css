@@ -1,11 +1,30 @@
 @import "tailwindcss";
 
+/* 空手ノートの色と文字（案A：生成り・墨・藍・朱） */
 @theme inline {
-  --color-paper: #faf7ef;
-  --color-ink: #1e3a5f;
-  --font-sans: var(--font-zen-maru), "Hiragino Maru Gothic ProN", "Hiragino Sans", sans-serif;
+  --color-washi: #f6f1e7; /* 背景（和紙） */
+  --color-paper: #fffdf7; /* カード */
+  --color-sumi: #22252b; /* 文字・ヘッダー（墨） */
+  --color-ai: #1f3a63; /* 道場生・主ボタン（藍） */
+  --color-shu: #b8322a; /* 朱印・注意（朱） */
+  --color-wakatake: #3f7a4a; /* 保護者（若竹） */
+  --color-line: #d9cfb8; /* 罫線 */
+  --color-muted: #6b6252; /* 補足の文字 */
+  --color-kinari: #efe4c8; /* 架空のデータの帯 */
+  --font-sans: var(--font-zen-kaku), "Hiragino Sans", sans-serif;
+  --font-mincho: var(--font-shippori), "Hiragino Mincho ProN", serif;
 }
 
 body {
   font-family: var(--font-sans);
+}
+
+/* ふりがな：読みは小さく、行の高さを保つ */
+ruby rt {
+  font-size: 0.5em;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+html[data-furigana="off"] ruby rt {
+  display: none;
 }

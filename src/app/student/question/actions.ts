@@ -7,6 +7,7 @@ import { callScene } from "@/lib/claude/call";
 import { buildQuestioningContext } from "@/lib/claude/context/questioning";
 import { MAX_QUESTIONS, questioningMessages, questioningSystem } from "@/lib/claude/prompts/questioning";
 import type { NextQuestion } from "@/lib/claude/schemas";
+import { stripFurigana } from "@/lib/furigana";
 
 const DEMO_STUDENT = "takuya";
 const MAX_ANSWER = 200;
@@ -21,13 +22,13 @@ export type AskResult =
 
 // 体や心のつらさを書いたときは、質問を続けずに大人へつなぐ（プロンプトにも同じ決まりがある）
 const DISTRESS = /いたい|痛い|けが|怪我|こわい|怖い|やめたい|いじめ|しにたい|死にたい|たたかれ|叩かれ/;
-const DISTRESS_REPLY = "おしえてくれて ありがとう。せんせいや おうちの ひとに つたえてね。";
-const CLOSING = "ここまで じぶんの ことばで ふりかえれたね。";
+const DISTRESS_REPLY = "{教|おし}えてくれてありがとう。{先生|せんせい}やおうちの{人|ひと}に{伝|つた}えてね。";
+const CLOSING = "ここまで{自分|じぶん}の{言葉|ことば}でふりかえれたね。";
 
 export async function askNext(noteId: number, turnsIn: unknown): Promise<AskResult> {
   const turns = checkTurns(noteId, turnsIn);
-  if (!turns) return { ok: false, message: "もういちど はじめから ためしてね" };
-  if (!(await isDemoStudentNote(noteId))) return { ok: false, message: "ノートが みつからないよ" };
+  if (!turns) return { ok: false, message: "もう{一度|いちど}はじめからためしてね" };
+  if (!(await isDemoStudentNote(noteId))) return { ok: false, message: "ノートが{見|み}つかりません" };
 
   const answers = turns.filter((t) => t.role === "student").map((t) => t.text);
   const last = answers.at(-1);
@@ -36,7 +37,7 @@ export async function askNext(noteId: number, turnsIn: unknown): Promise<AskResu
   }
 
   const ctx = await buildQuestioningContext(noteId);
-  if (!ctx) return { ok: false, message: "ノートが みつからないよ" };
+  if (!ctx) return { ok: false, message: "ノートが{見|み}つかりません" };
 
   const asked = turns.filter((t) => t.role === "claude").length;
   const result = await callScene("questioning", {
@@ -48,7 +49,7 @@ export async function askNext(noteId: number, turnsIn: unknown): Promise<AskResu
 
   if (answers.length === 0) {
     // まだ何も答えていないのにまとめには進まない
-    if (q.done) q = { type: "open", text: q.text || "きょうの けいこで、じぶんで きに なった ところは どこかな？", choices: [], done: false, summary: "" };
+    if (q.done) q = { type: "open", text: q.text || "{今日|きょう}の{稽古|けいこ}で、{自分|じぶん}で{気|き}になったところはどこかな？", choices: [], done: false, summary: "" };
   } else if (asked >= MAX_QUESTIONS && !q.done) {
     // 質問の数は決めた数まで。Claude がまとめなくても、ここで終える
     q = done(CLOSING, "");
@@ -56,7 +57,8 @@ export async function askNext(noteId: number, turnsIn: unknown): Promise<AskResu
   if (q.done) {
     // デモ応答や空のまとめのときは、本人の答えを並べた下書きにする（本人が言っていないことを入れない）
     const summary = result.source === "demo" || !q.summary ? answers.join("。") : q.summary;
-    return { ok: true, question: { ...q, summary: summary.slice(0, MAX_ANSWER) }, turn: null, source: result.source };
+    // まとめは入力欄に入れるので読みを外す
+    return { ok: true, question: { ...q, summary: stripFurigana(summary).slice(0, MAX_ANSWER) }, turn: null, source: result.source };
   }
 
   const turn: QuestionTurn = { role: "claude", type: q.type, text: q.text, choices: q.choices };
@@ -68,9 +70,9 @@ export type SaveQuestioningResult = { ok: true } | { ok: false; message: string 
 export async function saveQuestioning(noteId: number, turnsIn: unknown, summaryIn: unknown): Promise<SaveQuestioningResult> {
   const turns = checkTurns(noteId, turnsIn);
   const summary = typeof summaryIn === "string" ? summaryIn.trim().slice(0, MAX_ANSWER) : "";
-  if (!turns || !turns.some((t) => t.role === "student")) return { ok: false, message: "もういちど はじめから ためしてね" };
-  if (!summary) return { ok: false, message: "まとめを かいてね" };
-  if (!(await isDemoStudentNote(noteId))) return { ok: false, message: "ノートが みつからないよ" };
+  if (!turns || !turns.some((t) => t.role === "student")) return { ok: false, message: "もう{一度|いちど}はじめからためしてね" };
+  if (!summary) return { ok: false, message: "まとめを{書|か}いてね" };
+  if (!(await isDemoStudentNote(noteId))) return { ok: false, message: "ノートが{見|み}つかりません" };
 
   try {
     await getDb()
@@ -79,7 +81,7 @@ export async function saveQuestioning(noteId: number, turnsIn: unknown, summaryI
       .onConflictDoUpdate({ target: questionSessions.noteId, set: { turns, summary, updatedAt: sql`now()` } });
   } catch (error) {
     console.error("[question] 保存に失敗しました", error);
-    return { ok: false, message: "ほぞん できなかったよ。もういちど ためしてね" };
+    return { ok: false, message: "{保存|ほぞん}できませんでした。もう{一度|いちど}ためしてね" };
   }
   return { ok: true };
 }

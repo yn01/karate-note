@@ -35,15 +35,15 @@ export async function readNote(formData: FormData): Promise<ReadNoteResult> {
     image = { mediaType: "image/png", base64: (await readFile(SAMPLE_IMAGE)).toString("base64") };
   } else if (kind === "photo") {
     const file = formData.get("image");
-    if (!(file instanceof File) || file.size === 0) return { ok: false, message: "しゃしんが みつからないよ" };
-    if (file.size > MAX_IMAGE_BYTES) return { ok: false, message: "しゃしんが おおきすぎるよ" };
+    if (!(file instanceof File) || file.size === 0) return { ok: false, message: "{写真|しゃしん}が{見|み}つかりません" };
+    if (file.size > MAX_IMAGE_BYTES) return { ok: false, message: "{写真|しゃしん}が{大|おお}きすぎます" };
     const bytes = Buffer.from(await file.arrayBuffer());
     // 申告された種類ではなく、中身の先頭で確かめる
     const mediaType = detectImageType(bytes);
-    if (!mediaType) return { ok: false, message: "この しゃしんは よめないよ" };
+    if (!mediaType) return { ok: false, message: "この{写真|しゃしん}は{読|よ}めません" };
     image = { mediaType, base64: bytes.toString("base64") };
   } else {
-    return { ok: false, message: "もういちど えらんでね" };
+    return { ok: false, message: "もう{一度|いちど}{選|えら}んでね" };
   }
 
   const result = await callScene("noteReading", {
@@ -69,7 +69,7 @@ export async function saveNote(formData: FormData): Promise<SaveNoteResult> {
   const dateError = checkDate(date);
   if (dateError) return { ok: false, message: dateError };
   if (!fields.theme && !fields.good && !fields.improve) {
-    return { ok: false, message: "どれか 1つは かいてね" };
+    return { ok: false, message: "どれか1つは{書|か}いてね" };
   }
   // 全文は、本人が確かめた欄から作り直す（外から送られた文章は保存しない）
   const rawText = [
@@ -85,7 +85,7 @@ export async function saveNote(formData: FormData): Promise<SaveNoteResult> {
       .from(students)
       .where(eq(students.slug, DEMO_STUDENT))
       .limit(1);
-    if (!student) return { ok: false, message: "まだ じゅんびが できていないよ" };
+    if (!student) return { ok: false, message: "まだ{準備|じゅんび}ができていません" };
 
     // 先生が確かめ終わった日のノートは書きかえない（承認したときの前提がずれるため）
     const [approved] = await db
@@ -94,7 +94,7 @@ export async function saveNote(formData: FormData): Promise<SaveNoteResult> {
       .innerJoin(notes, eq(coachReviews.noteId, notes.id))
       .where(and(eq(notes.studentId, student.id), eq(notes.date, date), eq(coachReviews.status, "approved")))
       .limit(1);
-    if (approved) return { ok: false, message: "この ひの ノートは せんせいが もう よんだよ。ひづけを たしかめてね" };
+    if (approved) return { ok: false, message: "この{日|ひ}のノートは{先生|せんせい}がもう{読|よ}みました。{日付|ひづけ}を{確|たし}かめてね" };
 
     // 同じ日のノートは上書き（1人1日に1冊）
     await db
@@ -103,7 +103,7 @@ export async function saveNote(formData: FormData): Promise<SaveNoteResult> {
       .onConflictDoUpdate({ target: [notes.studentId, notes.date], set: { ...fields, rawText, source } });
   } catch (error) {
     console.error("[note] 保存に失敗しました", error);
-    return { ok: false, message: "ほぞん できなかったよ。もういちど ためしてね" };
+    return { ok: false, message: "{保存|ほぞん}できませんでした。もう{一度|いちど}ためしてね" };
   }
 
   return { ok: true, date };
@@ -112,17 +112,17 @@ export async function saveNote(formData: FormData): Promise<SaveNoteResult> {
 // 正しい暦の日付で、今日（日本時間）から1年前までの日だけを受け付ける
 function checkDate(date: string): string | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-  if (!m) return "ひづけを いれてね";
+  if (!m) return "{日付|ひづけ}を{入|い}れてね";
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
   const dt = new Date(Date.UTC(y, mo - 1, d));
   if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) {
-    return "ひづけを たしかめてね";
+    return "{日付|ひづけ}を{確|たし}かめてね";
   }
   const today = todayInJapan();
   const [ty, tm, td] = today.split("-").map(Number);
   const oneYearAgo = new Date(Date.UTC(ty - 1, tm - 1, td)).toISOString().slice(0, 10);
-  if (date > today) return "まだ きていない ひは えらべないよ";
-  if (date < oneYearAgo) return "1ねんより まえの ひは えらべないよ";
+  if (date > today) return "まだ{来|き}ていない{日|ひ}は{選|えら}べません";
+  if (date < oneYearAgo) return "1{年|ねん}より{前|まえ}の{日|ひ}は{選|えら}べません";
   return null;
 }
 
