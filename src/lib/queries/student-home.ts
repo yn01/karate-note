@@ -1,5 +1,6 @@
 import "server-only";
 import { todayInJapan } from "@/lib/dates";
+import { isExamPlanActive } from "@/lib/exams";
 import { asc, desc, eq } from "drizzle-orm";
 import { belts, developmentPlans, examPlans, getDb, milestones, notes, students, themeSelections } from "@/db";
 
@@ -40,15 +41,18 @@ export async function getStudentHome(slug: string) {
   ]);
 
   const current = road.find((b) => b.id === student.beltId) ?? null;
-  // つぎの目標：先生が決めた審査予定の帯。なければ次の帯
-  const planned = examPlan ? (road.find((b) => b.id === examPlan.targetBeltId) ?? null) : null;
-  const next = planned ?? (current ? (road.find((b) => b.order === current.order + 1) ?? null) : null);
+  const today = todayInJapan();
+  // つぎの目標：先生が決めた審査予定の帯（昇級したあと・審査の月が過ぎたあとは使わない）。なければ次の帯
+  const plannedBelt = examPlan ? (road.find((b) => b.id === examPlan.targetBeltId) ?? null) : null;
+  const active =
+    !!plannedBelt &&
+    isExamPlanActive({ examMonth: examPlan!.examMonth, targetOrder: plannedBelt.order }, current?.order, today);
+  const next = active ? plannedBelt : current ? (road.find((b) => b.order === current.order + 1) ?? null) : null;
   const theme: { text: string; forDate: string } | null =
     selected ?? (latestNote?.text ? { text: latestNote.text, forDate: latestNote.forDate } : null);
 
-  const today = todayInJapan();
   // 次の審査：先生が決めた審査予定。なければ育成計画のマイルストーンのうち「審査」のもの
-  const nextExam = examPlan
+  const nextExam = active && examPlan
     ? { dueLabel: "審査", dueDate: examPlan.examMonth }
     : (planMilestones.find((m) => m.dueLabel.includes("審査") && m.dueDate >= today) ?? null);
 

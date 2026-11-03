@@ -17,6 +17,7 @@ import {
 import { CRITERIA_POINTS, KATA, type CriteriaStatus } from "@/lib/criteria";
 import { stripFurigana } from "@/lib/furigana";
 import { loadSkill, type Skill } from "@/lib/skills";
+import { activeExamPlanText } from "@/lib/queries/exam-plan";
 
 export type ReviewContext = {
   student: { name: string; honorific: string; grade: string; belt: string; nextBelt: string | null };
@@ -30,6 +31,7 @@ export type ReviewContext = {
     focus: string;
     strengths: string[];
     milestones: { dueLabel: string; description: string }[];
+    examPlan: string | null; // 先生が決めた審査予定（マイルストーンより新しい）
   } | null;
   criteria: { key: string; label: string; status: CriteriaStatus | null }[]; // 状態は先生が付けたもの
   skills: Skill[];
@@ -46,7 +48,7 @@ export async function buildReviewContext(noteId: number): Promise<ReviewContext 
   if (!row) return null;
   const { note, student } = row;
 
-  const [road, pastNotes, [qs], [oo], [plan], planMilestones, checks, skills] = await Promise.all([
+  const [road, pastNotes, [qs], [oo], [plan], planMilestones, checks, skills, examText] = await Promise.all([
     db.select().from(belts).orderBy(asc(belts.order)),
     db
       .select({ date: notes.date, theme: notes.theme, good: notes.good, improve: notes.improve })
@@ -72,6 +74,7 @@ export async function buildReviewContext(noteId: number): Promise<ReviewContext 
       .from(criteriaChecks)
       .where(and(eq(criteriaChecks.studentId, student.id), eq(criteriaChecks.kata, KATA))),
     Promise.all([loadSkill("kata/heian-nidan.md"), loadSkill("coaching.md"), loadSkill("home-practice.md")]),
+    activeExamPlanText(student.id),
   ]);
 
   const current = road.find((b) => b.id === student.beltId);
@@ -95,6 +98,7 @@ export async function buildReviewContext(noteId: number): Promise<ReviewContext 
           focus: t(plan.focus),
           strengths: plan.strengths,
           milestones: planMilestones,
+          examPlan: examText,
         }
       : null,
     criteria: CRITERIA_POINTS.map((p) => ({ ...p, status: status.get(p.key) ?? null })),

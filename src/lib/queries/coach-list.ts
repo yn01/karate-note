@@ -6,7 +6,7 @@ import { belts, coachReviews, examPlans, getDb, notes, students } from "@/db";
 export async function getCoachList() {
   const db = getDb();
   const [rows, road, latestNotes, plans] = await Promise.all([
-    db.select().from(students),
+    db.select().from(students).orderBy(asc(students.slug)),
     db.select().from(belts).orderBy(asc(belts.order)),
     // 道場生ごとの最新のノートと、その確認の状態
     db
@@ -38,8 +38,13 @@ export async function getCoachList() {
       targets: road.filter((b) => b.rankType === "kyu" && belt && b.order > belt.order).map((b) => ({ kyu: b.kyu!, name: b.name })),
     };
   });
-  // 未確認を上に、そのあと級の順（級が小さいほど上の帯）
-  list.sort((a, b) => Number(b.unconfirmed) - Number(a.unconfirmed) || (a.belt?.order ?? 0) - (b.belt?.order ?? 0));
+  // 未確認を上に。そのあとは帯の低い順（白帯・10級が先）、同じならよみの順
+  list.sort(
+    (a, b) =>
+      Number(b.unconfirmed) - Number(a.unconfirmed) ||
+      (a.belt?.order ?? 0) - (b.belt?.order ?? 0) ||
+      a.slug.localeCompare(b.slug),
+  );
   return list;
 }
 
