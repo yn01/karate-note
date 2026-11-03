@@ -4,6 +4,9 @@ import type { ReviewContext } from "../context/review";
 import type { Draft } from "../schemas";
 import { reviewContextText, safe, skillsText } from "./review-context";
 
+// 点検のプロンプトを変えたら上げる。保存済みの点検結果は、別の版のものとして扱われ、点検し直しになる
+export const CHECK_PROMPT_VERSION = 2;
+
 const BASE = `あなたは空手道場の下書きの点検役です。先生あての下書きと、道場生への問いかけの記録が、この道場の原則に反していないかを確かめます。直すかどうかを決めるのは先生です。
 
 確かめること（当てはまるものだけを issues に入れる。問題がなければ ok を true、issues は空）：
