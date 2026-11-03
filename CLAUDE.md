@@ -106,6 +106,13 @@ skills/ に指導者の知見をMarkdownで置き、場面ごとにプロンプ�
 - `npm run db:generate`：`src/db/schema.ts` からマイグレーションを作る
 - `npm run db:migrate`：マイグレーションを Neon に当てる
 - `npm run db:seed`：data/seed/ の合成データを入れ直す（何度流しても同じ）
+- `npm run claude:smoke`：Claude の呼び出しの土台を確かめる（本物を1回呼ぶ）
+
+## Claude の呼び出し
+
+- 5場面とも `callScene()`（src/lib/claude/call.ts）を通す。SDK を直接呼ばない。
+- モデルは src/lib/claude/models.ts、出力の形は src/lib/claude/schemas.ts。デモ応答は data/seed/demo-responses.json（スキーマで検証される）。
+- server-only のモジュールをスクリプトから読むときは `tsx --conditions=react-server`。
 
 ## Next.js 16 の注意
 
