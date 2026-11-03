@@ -14,7 +14,11 @@ export default function ParentPage() {
         <PageTitle>今週のお便り</PageTitle>
         <p className="text-xs text-muted">アントラージュ（選手を支える人）へ</p>
       </div>
-      <Suspense fallback={<p className="py-10 text-center text-sm text-muted">読み込み中…</p>}>
+      <Suspense
+        fallback={
+          <p className="py-10 text-center text-sm text-muted">読み込み中…</p>
+        }
+      >
         <Letter />
       </Suspense>
     </div>
@@ -34,7 +38,11 @@ async function Letter() {
   const { studentName, noteDate, approvedAt, letter } = data;
   const [, m, d] = noteDate.split("-").map(Number);
   const approved = approvedAt
-    ? new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric" }).format(new Date(approvedAt))
+    ? new Intl.DateTimeFormat("ja-JP", {
+        timeZone: "Asia/Tokyo",
+        month: "numeric",
+        day: "numeric",
+      }).format(new Date(approvedAt))
     : null;
   const g = letter.guardianLetter;
 
@@ -48,9 +56,13 @@ async function Letter() {
           <Hanko size={44}>先生</Hanko>
         </div>
         {g.coachWords && (
-          <blockquote className="font-mincho border-l-4 border-wakatake pl-3 text-lg leading-relaxed">{g.coachWords}</blockquote>
+          <blockquote className="font-mincho border-l-4 border-wakatake pl-3 text-lg leading-relaxed">
+            {g.coachWords}
+          </blockquote>
         )}
-        {approved && <p className="text-xs text-muted">{approved}に先生が確認しました。</p>}
+        {approved && (
+          <p className="text-xs text-muted">{approved}に先生が確認しました。</p>
+        )}
       </Card>
 
       {g.watchPoints.length > 0 && (
@@ -74,19 +86,24 @@ async function Letter() {
       )}
 
       {g.effort && (
-        <Section title="日曜の頑張り">
+        <Section title="稽古での頑張り">
           <p>{g.effort}</p>
         </Section>
       )}
 
-      <Section title="手本">
-        {g.model && <p>{g.model}</p>}
-        <div className="grid grid-cols-2 gap-3 pt-2">
-          <UkeIllustration kind="with" />
-          <UkeIllustration kind="without" />
-        </div>
-        <p className="text-xs text-muted">イラストは動きのイメージです（先生が確かめて差し替えます）。</p>
-      </Section>
+      {g.model && (
+        <Section title="手本">
+          <p>{g.model}</p>
+          {/* イラストは先生が承認した手本の文があるときだけ添える */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <UkeIllustration kind="with" />
+            <UkeIllustration kind="without" />
+          </div>
+          <p className="text-xs text-muted">
+            イラストは動きのイメージです（先生が確かめて差し替えます）。
+          </p>
+        </Section>
+      )}
 
       {letter.homePractice.length > 0 && (
         <Section title="家でできる自主練">
@@ -114,7 +131,13 @@ async function Letter() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <Card tone="parent" className="space-y-2">
       <h2 className="font-mincho text-base font-extrabold">{title}</h2>
