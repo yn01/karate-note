@@ -1,8 +1,12 @@
+import { Card, PageTitle } from "@/components/ui";
+
 export default function Page() {
   return (
-    <section className="rounded-2xl bg-white p-6 text-center shadow-sm">
-      <h1 className="text-lg font-bold">今週のお便り</h1>
-      <p className="mt-2 text-sm text-ink/70">じゅんびちゅうです。</p>
-    </section>
+    <div className="space-y-4">
+      <PageTitle>今週のお便り</PageTitle>
+      <Card tone="parent" className="text-center text-sm text-muted">
+        準備中です。
+      </Card>
+    </div>
   );
 }

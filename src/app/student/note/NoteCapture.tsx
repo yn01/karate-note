@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { buttonClass, Card, Hanko } from "@/components/ui";
+import { F } from "@/components/ui/Furigana";
 import type { NoteReading } from "@/lib/claude/schemas";
 import { todayInJapan } from "@/lib/dates";
 import { readNote, saveNote } from "./actions";
@@ -38,7 +40,7 @@ export function NoteCapture() {
 
   // 状態を知らせる文（読み上げ用に、いつも置いておく）
   const status =
-    step.name === "reading" ? "よみとって いるよ" : step.name === "saved" ? "ほぞん したよ" : pending ? "ほぞん しているよ" : "";
+    step.name === "reading" ? "読み取っています" : step.name === "saved" ? "保存しました" : pending ? "保存しています" : "";
 
   const read = (form: FormData, preview: string, source: Source) => {
     setError(null);
@@ -59,7 +61,7 @@ export function NoteCapture() {
           preview,
         });
       } catch {
-        setError("うまく おくれなかったよ。もういちど ためしてね");
+        setError("うまく送れませんでした。もう一度ためしてね");
         setStep({ name: "choose" });
       }
     });
@@ -74,7 +76,7 @@ export function NoteCapture() {
       form.set("image", blob, "note.jpg");
       read(form, URL.createObjectURL(blob), "photo");
     } catch {
-      setError("この しゃしんは よめないよ。ほかの しゃしんで ためしてね");
+      setError("この写真は読めませんでした。ほかの写真でためしてね");
     } finally {
       if (fileInput.current) fileInput.current.value = "";
     }
@@ -102,7 +104,7 @@ export function NoteCapture() {
         }
         setStep({ name: "saved", date: result.date });
       } catch {
-        setError("ほぞん できなかったよ。もういちど ためしてね");
+        setError("保存できませんでした。もう一度ためしてね");
       }
     });
   };
@@ -113,16 +115,18 @@ export function NoteCapture() {
         {status}
       </p>
       {error && (
-        <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">
-          {error}
+        <p role="alert" className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
+          <F>{error}</F>
         </p>
       )}
 
       {step.name === "choose" && (
         <div className="space-y-3">
-          <p className="text-sm text-ink/80">けいこの あとに かいた ノートを とりこもう。</p>
-          <label className="block w-full cursor-pointer rounded-2xl bg-ink py-4 text-center text-lg font-bold text-white focus-within:ring-4 focus-within:ring-amber-300">
-            📷 ノートを とる
+          <p className="text-sm text-muted">
+            <F>{"{稽古|けいこ}のあとに{書|か}いたノートを{取|と}りこもう。"}</F>
+          </p>
+          <label className={`${buttonClass.primary} cursor-pointer focus-within:ring-4 focus-within:ring-shu/40`}>
+            <F>{"ノートを{撮|と}る"}</F>
             <input
               ref={fileInput}
               type="file"
@@ -132,15 +136,11 @@ export function NoteCapture() {
               onChange={(e) => onPhoto(e.target.files?.[0])}
             />
           </label>
-          <button
-            type="button"
-            onClick={onSample}
-            className="w-full rounded-2xl border-2 border-ink bg-white py-4 text-lg font-bold"
-          >
-            みほんの ノートを つかう
+          <button type="button" onClick={onSample} className={buttonClass.secondary}>
+            <F>{"{見本|みほん}のノートを{使|つか}う"}</F>
           </button>
-          <button type="button" onClick={onText} className="w-full py-2 text-sm text-ink/70 underline">
-            じぶんで かく
+          <button type="button" onClick={onText} className="w-full py-2 text-sm text-muted underline">
+            <F>{"{自分|じぶん}で{書|か}く"}</F>
           </button>
         </div>
       )}
@@ -148,76 +148,80 @@ export function NoteCapture() {
       {step.name === "reading" && (
         <div className="space-y-3 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- その場で作った画像のプレビュー */}
-          <img src={step.preview} alt="おくった ノート" className="mx-auto max-h-60 rounded-xl shadow" />
-          <p className="font-bold">よみとって いるよ…</p>
+          <img src={step.preview} alt="送ったノート" className="mx-auto max-h-60 border border-line" />
+          <p className="font-bold">
+            <F>{"{読|よ}み{取|と}っています…"}</F>
+          </p>
         </div>
       )}
 
       {step.name === "confirm" && (
         <form action={onSave} className="space-y-4">
           {step.fromDemo && (
-            <p className="rounded-xl bg-amber-100 p-3 text-sm font-bold">
-              よみとれなかったので、みほんを だしているよ。じぶんの ノートと ちがったら なおしてね。
+            <p className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
+              <F>{"{読|よ}み{取|と}れなかったので、{見本|みほん}を{出|だ}しています。{自分|じぶん}のノートとちがったら{直|なお}してね。"}</F>
             </p>
           )}
           {step.source !== "text" && !step.fromDemo && isEmptyReading(step.reading) && (
-            <p className="rounded-xl bg-amber-100 p-3 text-sm font-bold">
-              うまく よめなかったよ。じぶんで かいてね。
+            <p className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
+              <F>{"うまく{読|よ}めませんでした。{自分|じぶん}で{書|か}いてね。"}</F>
             </p>
           )}
           {step.source !== "text" && !step.fromDemo && !isEmptyReading(step.reading) && (
-            <p className="text-sm text-ink/80">よみとったよ。ちがう ところが あったら なおしてね。</p>
+            <p className="text-sm text-muted">
+              <F>{"{読|よ}み{取|と}りました。ちがうところがあったら{直|なお}してね。"}</F>
+            </p>
           )}
           {step.preview && (
             /* eslint-disable-next-line @next/next/no-img-element -- その場で作った画像のプレビュー */
-            <img src={step.preview} alt="おくった ノート" className="mx-auto max-h-40 rounded-xl shadow" />
+            <img src={step.preview} alt="送ったノート" className="mx-auto max-h-40 border border-line" />
           )}
           <input type="hidden" name="source" value={step.source} />
-          <Field label="ひづけ">
+          <Field label="{日付|ひづけ}">
             <input
               type="date"
               name="date"
               required
               defaultValue={step.reading.date}
-              className="w-full rounded-xl border border-ink/30 bg-white p-3"
+              className="w-full rounded border border-line bg-paper p-3"
             />
           </Field>
-          <TextField label="きょうの テーマ（なにを がんばる？）" name="theme" value={step.reading.theme} />
-          <TextField label="よかったこと" name="good" value={step.reading.good} />
-          <TextField label="なおしたいこと" name="improve" value={step.reading.improve} />
+          <TextField label="{稽古|けいこ}{前|まえ}　{今日|きょう}のテーマ（{何|なに}をがんばる？）" name="theme" value={step.reading.theme} />
+          <TextField label="{稽古|けいこ}{後|ご}　よかったこと" name="good" value={step.reading.good} />
+          <TextField label="{稽古|けいこ}{後|ご}　{直|なお}したいこと" name="improve" value={step.reading.improve} />
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-2xl bg-ink py-4 text-lg font-bold text-white disabled:opacity-50"
+            className={buttonClass.primary}
           >
-            {pending ? "ほぞん しているよ…" : "これで ほぞんする"}
+            <F>{pending ? "{保存|ほぞん}しています…" : "これで{保存|ほぞん}する"}</F>
           </button>
           <button
             type="button"
             disabled={pending}
             onClick={() => setStep({ name: "choose" })}
-            className="w-full py-2 text-sm text-ink/70 underline disabled:opacity-50"
+            className="w-full py-2 text-sm text-muted underline disabled:opacity-50"
           >
-            やりなおす
+            <F>{"やり{直|なお}す"}</F>
           </button>
         </form>
       )}
 
       {step.name === "saved" && (
-        <div className="space-y-4 rounded-2xl bg-white p-5 text-center shadow-sm">
-          <p ref={savedHeading} tabIndex={-1} className="text-lg font-bold outline-none">
-            ほぞん したよ！
-          </p>
-          <Link
-            href="/student/question"
-            className="block w-full rounded-2xl bg-ink py-4 text-lg font-bold text-white"
-          >
-            ふりかえりの しつもんへ
+        <Card className="space-y-4 text-center">
+          <div className="flex items-center justify-center gap-3">
+            <Hanko size={48}>{"保存"}</Hanko>
+            <p ref={savedHeading} tabIndex={-1} className="font-mincho text-lg font-extrabold outline-none">
+              <F>{"{保存|ほぞん}しました"}</F>
+            </p>
+          </div>
+          <Link href="/student/question" className={buttonClass.primary}>
+            <F>{"ふりかえりの{質問|しつもん}へ"}</F>
           </Link>
-          <Link href="/student" className="block text-sm text-ink/70 underline">
-            ホームに もどる
+          <Link href="/student" className="block text-sm text-muted underline">
+            <F>{"ホームに{戻|もど}る"}</F>
           </Link>
-        </div>
+        </Card>
       )}
     </div>
   );
@@ -226,7 +230,9 @@ export function NoteCapture() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block space-y-1">
-      <span className="text-sm font-bold text-ink/80">{label}</span>
+      <span className="text-sm font-bold text-muted">
+        <F>{label}</F>
+      </span>
       {children}
     </label>
   );
@@ -240,7 +246,7 @@ function TextField({ label, name, value }: { label: string; name: string; value:
         defaultValue={value}
         rows={2}
         maxLength={200}
-        className="w-full rounded-xl border border-ink/30 bg-white p-3 text-lg"
+        className="w-full rounded border border-line bg-paper p-3 text-lg"
       />
     </Field>
   );

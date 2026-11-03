@@ -1,4 +1,6 @@
-import { beltHex, beltKidsLabel, kidsMonth } from "@/lib/belt-labels";
+import { Card, Hanko, SectionTitle } from "@/components/ui";
+import { F } from "@/components/ui/Furigana";
+import { beltHex, beltLabel, kataLabel, kidsMonth } from "@/lib/belt-labels";
 import type { StudentHome } from "@/lib/queries/student-home";
 
 type Props = {
@@ -8,60 +10,61 @@ type Props = {
   nextExam: StudentHome["nextExam"];
 };
 
-// 黒帯への道のり（白帯 → 10級 … 1級 → 黒帯）と現在地
+// 黒帯への道のり：本物の帯の色を並べる。いまここ＝朱印、次の目標＝藍の枠
 export function BeltRoad({ road, currentId, nextId, nextExam }: Props) {
-  const currentOrder = road.find((b) => b.id === currentId)?.order ?? -1;
-
   return (
-    <section aria-labelledby="road" className="rounded-2xl bg-white p-5 shadow-sm">
-      <h2 id="road" className="text-lg font-bold">
-        くろおびへの みちのり
-      </h2>
-      <ol className="mt-4">
-        {road.map((b, i) => {
+    <Card aria-labelledby="road">
+      <SectionTitle id="road">
+        <F>{"{黒帯|くろおび}への{道|みち}のり"}</F>
+      </SectionTitle>
+      <ol className="space-y-2">
+        {road.map((b) => {
           const isCurrent = b.id === currentId;
           const isNext = b.id === nextId;
-          const done = b.order < currentOrder;
-          const last = i === road.length - 1;
           return (
-            <li key={b.id} className="relative flex gap-3 pb-3">
-              {!last && (
-                <span
-                  aria-hidden
-                  className={`absolute top-6 left-[11px] h-full w-0.5 ${done || isCurrent ? "bg-ink" : "bg-ink/15"}`}
-                />
-              )}
+            <li
+              key={b.id}
+              className={`flex items-center gap-3 px-2 py-1 ${isNext ? "border border-ai" : ""} ${
+                !isCurrent && !isNext ? "opacity-60" : ""
+              }`}
+            >
               <span
                 aria-hidden
-                className={`relative z-[1] mt-0.5 size-6 shrink-0 rounded-full border-2 ${
-                  isCurrent ? "border-ink ring-4 ring-amber-300" : "border-ink/40"
-                }`}
+                className="h-2.5 w-20 shrink-0 border border-black/15"
                 style={{ backgroundColor: beltHex(b.color) }}
               />
-              <div
-                className={`flex-1 rounded-xl px-3 py-1.5 ${
-                  isCurrent ? "bg-amber-100" : isNext ? "bg-sky-50" : ""
-                }`}
-              >
-                <p className={`text-sm ${isCurrent || isNext ? "font-bold" : done ? "text-ink/50" : "text-ink/80"}`}>
-                  {beltKidsLabel(b)}
-                  {isCurrent && (
-                    <span className="ml-2 rounded-full bg-ink px-2 py-0.5 text-xs text-white">いまここ</span>
-                  )}
-                  {isNext && (
-                    <span className="ml-2 rounded-full bg-sky-600 px-2 py-0.5 text-xs text-white">つぎの めあて</span>
-                  )}
+              <div className="min-w-0 flex-1">
+                <p className={`text-sm ${isCurrent || isNext ? "font-bold" : ""}`}>
+                  <F>{beltLabel(b)}</F>
                 </p>
-                {/* 形は、いま練習している次の審査の課題だけ出す */}
-                {b.kata && isNext && <p className="text-xs text-ink/70">しんさの かた：{b.kata}</p>}
-                {isNext && nextExam && (
-                  <p className="text-xs text-ink/70">{kidsMonth(nextExam.dueDate)}の しんさ</p>
+                {isNext && b.kata && (
+                  <p className="text-xs text-muted">
+                    <F>{`{審査|しんさ}の{形|かた}：${kataLabel(b.kata)}`}</F>
+                    {nextExam && (
+                      <>
+                        {" ／ "}
+                        <F>{`${kidsMonth(nextExam.dueDate)}の{審査|しんさ}`}</F>
+                      </>
+                    )}
+                  </p>
                 )}
               </div>
+              {isCurrent && (
+                <Hanko>
+                  いま
+                  <br />
+                  ここ
+                </Hanko>
+              )}
+              {isNext && (
+                <span className="shrink-0 border border-ai px-1.5 py-0.5 text-[11px] font-bold text-ai">
+                  <F>{"つぎの{目標|もくひょう}"}</F>
+                </span>
+              )}
             </li>
           );
         })}
       </ol>
-    </section>
+    </Card>
   );
 }
