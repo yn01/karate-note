@@ -6,7 +6,8 @@ import { join } from "node:path";
 export type Skill = { path: string; body: string };
 
 const SKILLS_DIR = join(process.cwd(), "skills");
-export const DRAFT_MARK = "<!-- 下書き";
+// 先頭の「<!-- 下書き」の行（空白のゆれも見る）
+const DRAFT_MARK = /^\uFEFF?\s*<!--\s*下書き/;
 let templateLines: Set<string> | undefined;
 
 type LoadOptions = {
@@ -24,10 +25,19 @@ export async function loadSkill(relPath: string, opts: LoadOptions = {}): Promis
     return null;
   }
   // 先生が確かめる前の下書き（先頭の印）は、プロンプトに入れない。印を消すと読み込まれる
-  if (raw.includes(DRAFT_MARK)) return null;
+  if (DRAFT_MARK.test(raw)) {
+    if (process.env.NODE_ENV !== "production") console.info(`[skills] 下書きのため読み込みません：skills/${relPath}`);
+    return null;
+  }
   const template = await loadTemplateLines();
-  const lines = dropSections(raw.replace(/<!--[\s\S]*?-->/g, "").split("\n"), opts.excludeSections ?? [])
-    .map((l) => l.replace(/（例：[^）]*）/g, ""))
+  const cleaned = raw
+    .replace(/<!--[\s\S]*?-->/g, "") // コメント
+    .replace(/<!--[\s\S]*$/, ""); // 閉じていないコメントから後ろ
+  const lines = dropSections(cleaned.split("\n"), opts.excludeSections ?? [])
+    // テンプレートの書き方の説明（（例：…））と、まだ埋めていない空欄（（先生が書く：…））は入れない
+    .map((l) => l.replace(/（例：[^）]*）/g, "").replace(/（先生が書く：[^）]*）/g, ""))
+    .filter((l) => !/^\s*下書き：/.test(l))
+    .filter((l) => !/^\s*[-*]\s*$/.test(l))
     .filter((l) => !template.has(norm(l)) || isStructural(l));
 
   const written = lines.filter((l) => !isStructural(l) && norm(l)).join("").length;
