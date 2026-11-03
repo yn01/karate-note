@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { buttonClass, Card, SectionTitle } from "@/components/ui";
 import { CRITERIA_STATUS_LABEL, type CriteriaStatus } from "@/lib/criteria";
@@ -15,6 +16,7 @@ export function CriteriaEditor({ criteria }: Props) {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   const save = () => {
     setError(null);
@@ -22,7 +24,10 @@ export function CriteriaEditor({ criteria }: Props) {
       try {
         const r = await saveCriteria(values);
         if (!r.ok) setError(r.message);
-        else setSaved(true);
+        else {
+          setSaved(true);
+          router.refresh(); // 下書きの「先生のチェック」も新しくする
+        }
       } catch {
         setError("保存できませんでした。もう一度ためしてください");
       }

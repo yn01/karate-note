@@ -1,7 +1,7 @@
 // 場面4・5 で共通に使う、文脈を文章にする部分
 import type { ReviewContext } from "../context/review";
 
-const LABEL = { not_yet: "まだ", sometimes: "ときどきできる", stable: "安定してできる" } as const;
+import { CRITERIA_STATUS_LABEL as LABEL } from "@/lib/criteria";
 // タグの区切りを崩されないよう、入力の < > を全角にする
 export const safe = (s: string) => s.replace(/</g, "＜").replace(/>/g, "＞");
 

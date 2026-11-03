@@ -43,6 +43,13 @@
       "when": 1793711131301,
       "tag": "0005_one_on_one_confirm",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793720901910,
+      "tag": "0006_review_check_hash",
+      "breakpoints": true
     }
   ]
 }

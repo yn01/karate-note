@@ -165,10 +165,8 @@ export const questionSessions = pgTable("question_sessions", {
 // final から下の View 型の項目だけを取り出す（draft・checkResult・criteriaMatch は渡さない）。
 // 下書きの形は Claude の出力（src/lib/claude/schemas.ts の draft）と同じ。指導者が直した後（final）も同じ形
 export type ReviewContent = Draft;
-// 保護者に渡してよいもの（到達基準の状態＝点数は含めない）
-export type GuardianView = Pick<ReviewContent, "guardianLetter" | "homePractice" | "safety">;
-// 道場生に渡してよいもの
-export type StudentView = Pick<ReviewContent, "themeCandidates">;
+// 保護者・道場生に渡してよい項目は src/lib/review-fields.ts（toGuardianView・toStudentView）だけで取り出す
+export type { GuardianView, StudentView } from "../lib/review-fields";
 
 export const coachReviews = pgTable(
   "coach_reviews",
@@ -180,6 +178,8 @@ export const coachReviews = pgTable(
     .references(() => notes.id, { onDelete: "cascade" }),
   draft: jsonb("draft").$type<ReviewContent>(),
   checkResult: jsonb("check_result").$type<CheckResult>(),
+  checkHash: text("check_hash"), // 点検した内容のハッシュ（承認する内容と同じかを確かめる）
+  draftUpdatedAt: timestamp("draft_updated_at", { withTimezone: true }), // 下書きを作った日時
   final: jsonb("final").$type<ReviewContent>(),
   status: reviewStatusEnum("status").notNull().default("draft"),
   approvedAt: timestamp("approved_at", { withTimezone: true }),
