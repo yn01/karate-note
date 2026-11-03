@@ -15,6 +15,13 @@
       "when": 1793699661651,
       "tag": "0001_claude_calls",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793700459551,
+      "tag": "0002_notes_unique_day",
+      "breakpoints": true
     }
   ]
 }

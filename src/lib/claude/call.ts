@@ -3,6 +3,7 @@
 // ここは「届け先」を持たない。道場生・保護者に届くかどうかは、指導者の承認（coach_reviews）で決まる。
 // 画面側の約束：source === "demo" のときは、デモ応答であることを必ず表示する。
 import "server-only";
+import { todayInJapan } from "@/lib/dates";
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { and, count, eq, inArray } from "drizzle-orm";
@@ -159,6 +160,3 @@ async function record(row: typeof claudeCalls.$inferInsert) {
   }
 }
 
-function todayInJapan(): string {
-  return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(new Date());
-}

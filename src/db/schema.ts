@@ -116,7 +116,9 @@ export const oneOnOnes = pgTable("one_on_ones", {
 });
 
 // ノート
-export const notes = pgTable("notes", {
+export const notes = pgTable(
+  "notes",
+  {
   id: serial("id").primaryKey(),
   studentId: integer("student_id")
     .notNull()
@@ -128,7 +130,10 @@ export const notes = pgTable("notes", {
   rawText: text("raw_text"),
   source: noteSourceEnum("source").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+  },
+  // 1人1日に1冊（同じ日を保存し直したら上書き）
+  (t) => [uniqueIndex("notes_student_date").on(t.studentId, t.date)],
+);
 
 // 問いかけの記録
 export type QuestionTurn = {

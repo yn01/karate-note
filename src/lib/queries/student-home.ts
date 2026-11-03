@@ -1,4 +1,5 @@
 import "server-only";
+import { todayInJapan } from "@/lib/dates";
 import { asc, desc, eq } from "drizzle-orm";
 import { belts, developmentPlans, getDb, milestones, notes, students, themeSelections } from "@/db";
 
@@ -47,9 +48,5 @@ export async function getStudentHome(slug: string) {
   return { student, road, current, next, theme, nextExam };
 }
 
-// 日本時間の今日（YYYY-MM-DD）。connection() の後に呼ぶ
-function todayInJapan(): string {
-  return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo" }).format(new Date());
-}
 
 export type StudentHome = NonNullable<Awaited<ReturnType<typeof getStudentHome>>>;

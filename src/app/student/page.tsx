@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { BeltRoad } from "@/components/BeltRoad";
@@ -35,14 +36,12 @@ async function StudentHome() {
         <p className="mt-2 text-2xl font-bold leading-snug">{theme?.text ?? "まだ きまっていないよ"}</p>
       </section>
 
-      <button
-        type="button"
-        disabled
-        className="w-full rounded-2xl bg-ink/30 py-4 text-lg font-bold text-white"
-        title="つぎの ばんで つくります"
+      <Link
+        href="/student/note"
+        className="block w-full rounded-2xl bg-ink py-4 text-center text-lg font-bold text-white"
       >
-        ノートを とる（じゅんびちゅう）
-      </button>
+        📷 ノートを とる
+      </Link>
 
       <BeltRoad road={road} currentId={current?.id ?? null} nextId={next?.id ?? null} nextExam={nextExam} />
     </div>
