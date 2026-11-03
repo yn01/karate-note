@@ -19,7 +19,7 @@ import { stripFurigana } from "@/lib/furigana";
 import { loadSkill, type Skill } from "@/lib/skills";
 
 export type ReviewContext = {
-  student: { name: string; grade: string; belt: string; nextBelt: string | null };
+  student: { name: string; honorific: string; grade: string; belt: string; nextBelt: string | null };
   note: { id: number; date: string; theme: string; good: string; improve: string };
   pastNotes: { date: string; theme: string; good: string; improve: string }[];
   questioning: { turns: QuestionTurn[]; summary: string } | null;
@@ -80,7 +80,7 @@ export async function buildReviewContext(noteId: number): Promise<ReviewContext 
   const status = new Map(checks.map((c) => [c.key, c.status]));
 
   return {
-    student: { name: student.name, grade: student.grade, belt: current?.name ?? "", nextBelt: next?.name ?? null },
+    student: { name: student.name, honorific: student.honorific, grade: student.grade, belt: current?.name ?? "", nextBelt: next?.name ?? null },
     note: { id: note.id, date: note.date, theme: t(note.theme), good: t(note.good), improve: t(note.improve) },
     pastNotes: pastNotes.map((n) => ({ date: n.date, theme: t(n.theme), good: t(n.good), improve: t(n.improve) })),
     // 問いかけの質問は読み付きの書き方なので、読みを外して渡す
