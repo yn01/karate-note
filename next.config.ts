@@ -10,6 +10,8 @@ const nextConfig: NextConfig = {
   // 見本のノート画像はサーバーでも読む（public は CDN 配信なので、関数に入れておく）
   outputFileTracingIncludes: {
     "/student/note": ["./public/samples/sample-note-11-01.png"],
+    // 指導者の知見（skills）をプロンプトに読み込む
+    "/student/question": ["./skills/**/*.md"],
   },
   // トップは道場生ホームへ（デモの入口）
   async redirects() {
