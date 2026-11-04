@@ -93,7 +93,7 @@ export async function buildReviewContext(noteId: number): Promise<ReviewContext 
     oneOnOne: oo ? { transcript: oo.transcript, organized: oo.organizedConfirmedAt ? oo.organized : null } : null,
     plan: plan
       ? {
-          selfGoals: plan.selfGoals,
+          selfGoals: plan.selfGoals.map(stripFurigana),
           guardianWish: t(plan.guardianWish),
           focus: t(plan.focus),
           strengths: plan.strengths,

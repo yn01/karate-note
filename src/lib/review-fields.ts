@@ -23,7 +23,8 @@ export const LIMITS = {
   long: 600, // 要約・計画見直し
   text: 300, // お便りの各文・照合のコメント
   item: 200, // 一覧の1行・自主練のメニューと狙い
-  theme: 80, // 次回テーマの1つ
+  theme: 80, // 次回テーマの1つ（読みの印を外した長さ）
+  themeMarkup: 200, // 次回テーマの1つ（読みの印を含めた長さ）
   list: 6,
   letterList: 3,
   themes: 3,

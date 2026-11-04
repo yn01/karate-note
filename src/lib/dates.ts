@@ -22,3 +22,11 @@ export function oneYearAgo(today = todayInJapan()): string {
   const [ty, tm, td] = today.split("-").map(Number);
   return new Date(Date.UTC(ty - 1, tm - 1, td)).toISOString().slice(0, 10);
 }
+
+// 次の稽古の日（稽古は日曜）。今日が日曜なら今日
+export function nextPracticeDay(today = todayInJapan()): string {
+  const [y, m, d] = today.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + ((7 - dt.getUTCDay()) % 7));
+  return dt.toISOString().slice(0, 10);
+}

@@ -13,7 +13,7 @@ export async function getStudentHome(slug: string) {
   if (!student) return null;
 
   // 公開版はサーバーと DB の地域が離れているので、残りの問い合わせは同時に投げる（往復2回）
-  const [road, [selected], [latestNote], planMilestones, [examPlan]] = await Promise.all([
+  const [road, [selected], [latestNote], planMilestones, [examPlan], [plan]] = await Promise.all([
     db.select().from(belts).orderBy(asc(belts.order)),
     // 今日のテーマ：本人が選んだ（書いた）もの
     db
@@ -38,6 +38,8 @@ export async function getStudentHome(slug: string) {
       .orderBy(asc(milestones.order)),
     // 先生が決めた審査予定
     db.select().from(examPlans).where(eq(examPlans.studentId, student.id)).limit(1),
+    // 本人の目標（育成計画のうち、本人が決めて直せるもの）
+    db.select({ selfGoals: developmentPlans.selfGoals }).from(developmentPlans).where(eq(developmentPlans.studentId, student.id)).limit(1),
   ]);
 
   const current = road.find((b) => b.id === student.beltId) ?? null;
@@ -56,7 +58,7 @@ export async function getStudentHome(slug: string) {
     ? { dueLabel: "審査", dueDate: examPlan.examMonth }
     : (planMilestones.find((m) => m.dueLabel.includes("審査") && m.dueDate >= today) ?? null);
 
-  return { student, road, current, next, theme, nextExam };
+  return { student, road, current, next, theme, nextExam, selfGoals: plan?.selfGoals ?? null };
 }
 
 

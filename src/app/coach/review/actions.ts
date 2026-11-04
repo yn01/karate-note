@@ -12,6 +12,7 @@ import { draftSchema, type CheckResult, type Draft } from "@/lib/claude/schemas"
 import { CRITERIA_POINTS, KATA, type CriteriaStatus } from "@/lib/criteria";
 import { hashDraft } from "@/lib/draft-hash";
 import { LIMITS } from "@/lib/review-fields";
+import { clampFurigana, stripFurigana } from "@/lib/furigana";
 import { callScene } from "@/lib/claude/call";
 import { ONE_ON_ONE_SYSTEM, oneOnOneMessages } from "@/lib/claude/prompts/one-on-one";
 import { checkPastDate, type DateProblem } from "@/lib/dates";
@@ -318,6 +319,12 @@ async function ownNoteId(value: unknown): Promise<number | null> {
   return row?.id ?? null;
 }
 
+// 次回テーマは {漢字|よみ} の読みの印を含む。読みを外した長さで切り、印込みで長すぎるものは印を外す
+function clampTheme(x: string): string {
+  const s = clampFurigana(x.trim(), LIMITS.theme);
+  return s.length <= LIMITS.themeMarkup ? s : stripFurigana(s);
+}
+
 // 長さと数の上限をそろえる（画面と同じ LIMITS）。照合は要点の一覧を軸に組み立てる
 function clampDraft(d: Draft): Draft {
   const str = (s: string, n: number) => s.trim().slice(0, n);
@@ -327,7 +334,7 @@ function clampDraft(d: Draft): Draft {
     summary: str(d.summary, LIMITS.long),
     praise: list(d.praise, LIMITS.list, LIMITS.item),
     criteriaMatch: CRITERIA_POINTS.map((p) => ({ pointKey: p.key, pointLabel: p.label, comment: str(comments.get(p.key) ?? "", LIMITS.text) })),
-    themeCandidates: list(d.themeCandidates, LIMITS.themes, LIMITS.theme),
+    themeCandidates: d.themeCandidates.map(clampTheme).filter(Boolean).slice(0, LIMITS.themes),
     homePractice: d.homePractice
       .map((h) => ({ menu: str(h.menu, LIMITS.item), aim: str(h.aim, LIMITS.item) }))
       .filter((h) => h.menu)
