@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { checkPastDate, oneYearAgo, themeDateAfter } from "./dates";
 
 describe("themeDateAfter（選んだテーマを、どの稽古の日のものにするか）", () => {
@@ -18,16 +18,24 @@ describe("themeDateAfter（選んだテーマを、どの稽古の日のもの�
   });
 });
 
-describe("checkPastDate", () => {
+describe("checkPastDate（今日を 2026-11-04 の日本時間に固定）", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-04T03:00:00Z"));
+  });
+  afterEach(() => vi.useRealTimers());
+
   it("形や暦がおかしい日付を断る", () => {
     expect(checkPastDate("")).toBe("missing");
     expect(checkPastDate("2026-02-30")).toBe("invalid");
   });
-  it("1年前より古い日を断る", () => {
-    expect(checkPastDate(oneYearAgo())).toBeNull();
-    expect(checkPastDate("2000-01-01")).toBe("tooOld");
+  it("1年前までは受け付け、それより古い日を断る", () => {
+    expect(oneYearAgo()).toBe("2025-11-04");
+    expect(checkPastDate("2025-11-04")).toBeNull();
+    expect(checkPastDate("2025-11-03")).toBe("tooOld");
   });
-  it("未来の日を断る", () => {
-    expect(checkPastDate("2999-01-01")).toBe("future");
+  it("今日までは受け付け、未来の日を断る", () => {
+    expect(checkPastDate("2026-11-04")).toBeNull();
+    expect(checkPastDate("2026-11-05")).toBe("future");
   });
 });

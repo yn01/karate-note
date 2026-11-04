@@ -13,12 +13,29 @@ function files(dir: string): string[] {
 }
 const read = (p: string) => readFileSync(join(root, p), "utf8");
 
+// 問い合わせ（src/lib/queries）は、先生だけのもの（coach-*）と、道場生・保護者に出すものに分ける。
+// 新しいファイルを足したら、どちらかに入れる（入れないとテストが落ちる）
+const COACH_QUERIES = ["coach-list", "coach-review", "exam-plan"];
+const AUDIENCE_QUERIES = ["student-home", "theme-choice", "guardian-letter", "latest-note"];
+
 // 道場生・保護者の画面と、その画面のための問い合わせ
 const audienceFiles = [
   ...files("src/app/student"),
   ...files("src/app/parent"),
-  ...["student-home", "theme-choice", "guardian-letter", "latest-note"].map((n) => `src/lib/queries/${n}.ts`),
+  ...AUDIENCE_QUERIES.map((n) => `src/lib/queries/${n}.ts`),
 ];
+
+describe("問い合わせの仕分け", () => {
+  it("src/lib/queries のファイルは、先生だけか道場生・保護者向けのどちらかに入っている", () => {
+    const names = files("src/lib/queries").map((f) => f.split("/").pop()!.replace(/\.ts$/, ""));
+    for (const n of names) expect([...COACH_QUERIES, ...AUDIENCE_QUERIES], `${n} が未分類`).toContain(n);
+  });
+  it("道場生・保護者の画面は、先生だけの問い合わせを読まない", () => {
+    for (const f of [...files("src/app/student"), ...files("src/app/parent")]) {
+      for (const n of COACH_QUERIES) expect(read(f).includes(`@/lib/queries/${n}`), `${f} が ${n} を読んでいる`).toBe(false);
+    }
+  });
+});
 
 describe("承認前のものを道場生・保護者に届けない", () => {
   it("下書き・点検の結果・先生だけが見る項目を読まない", () => {
@@ -26,9 +43,13 @@ describe("承認前のものを道場生・保護者に届けない", () => {
     for (const f of audienceFiles) {
       const src = read(f);
       for (const word of forbidden) expect(src.includes(word), `${f} に ${word}`).toBe(false);
+      // 行ごと読む書き方（下書きや点検の結果まで読んでしまう）も使わない
+      expect(src, `${f} が coach_reviews を行ごと読んでいる`).not.toMatch(/select\(\)\s*\.from\(coachReviews\)/);
+      expect(src, `${f} が coach_reviews を行ごと読んでいる`).not.toMatch(/query\.coachReviews/);
     }
   });
 
+  // ファイルごとに確かめる（1つのファイルに絞った問い合わせと絞っていない問い合わせがあると見逃す。そのときはレビューで見る）
   it("final を読むところは、承認済みで絞り、届ける項目の関数を通す", () => {
     const readers = audienceFiles.filter((f) => read(f).includes("coachReviews.final"));
     expect(readers.length).toBeGreaterThan(0);
@@ -41,8 +62,12 @@ describe("承認前のものを道場生・保護者に届けない", () => {
 });
 
 describe("ことば", () => {
-  it("画面に「型」と書かない（「形」と書く）", () => {
-    for (const f of [...files("src/app"), ...files("src/components")]) {
+  it("画面に「型」と書かない（「形」と書く）。画面に出るデータと知見も", () => {
+    const data = readdirSync(join(root, "data/seed")).filter((n) => n.endsWith(".json")).map((n) => `data/seed/${n}`);
+    const skills = ["skills", "skills/kata"].flatMap((d) =>
+      readdirSync(join(root, d)).filter((n) => n.endsWith(".md")).map((n) => `${d}/${n}`),
+    );
+    for (const f of [...files("src/app"), ...files("src/components"), ...data, ...skills]) {
       expect(read(f).includes("型"), `${f} に「型」`).toBe(false);
     }
   });
