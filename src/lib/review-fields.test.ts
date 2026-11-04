@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import demoResponses from "../../data/seed/demo-responses.json";
-import { draftSchema } from "./claude/schemas";
+import { checkSchema, draftSchema } from "./claude/schemas";
 import { DELIVERED_FIELDS, toGuardianView, toStudentView } from "./review-fields";
 
 const draft = draftSchema.parse(demoResponses.draft);
@@ -23,5 +23,15 @@ describe("承認した final から届けてよい項目だけを取り出す", 
     const all = JSON.stringify([toGuardianView(draft), toStudentView(draft)]);
     for (const c of draft.criteriaMatch) if (c.comment) expect(all).not.toContain(c.comment);
     if (draft.summary) expect(all).not.toContain(draft.summary);
+  });
+});
+
+describe("デモ応答（「一周したあと」の状態と、Claude が使えないときに使う）", () => {
+  it("下書きと点検のデモ応答が、出力の形に合っている", () => {
+    expect(() => draftSchema.parse(demoResponses.draft)).not.toThrow();
+    expect(() => checkSchema.parse(demoResponses.check)).not.toThrow();
+  });
+  it("点検のデモ応答は「問題なし」にしない（点検していない下書きが通ったように見えないように）", () => {
+    expect(checkSchema.parse(demoResponses.check).ok).toBe(false);
   });
 });

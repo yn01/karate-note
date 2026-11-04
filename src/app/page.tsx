@@ -47,7 +47,7 @@ export default function SplashPage() {
       <p className="border-y border-line py-3 text-center text-sm font-bold leading-relaxed">
         Claude は答えを教えません。
         <br />
-        先生が承認したものだけが届きます。
+        保護者へのお便りと次のテーマは、先生が承認したものだけが届きます。
       </p>
 
       <LinkButton href="/student">はじめる（道場生の画面へ）</LinkButton>

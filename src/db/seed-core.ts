@@ -12,7 +12,8 @@ import examsJson from "../../data/seed/exam-plans.json";
 import notesJson from "../../data/seed/notes.json";
 import studentsJson from "../../data/seed/students.json";
 import themesJson from "../../data/seed/theme-selections.json";
-import type { Db } from "./client";
+import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
+import type * as schemaAll from "./schema";
 import {
   belts,
   coachReviews,
@@ -29,11 +30,16 @@ import {
 } from "./schema";
 import { draftSchema, oneOnOneSchema } from "../lib/claude/schemas";
 
+// アプリの DB（neon-http）でも、トランザクション（neon-serverless）でも受け取れるように
+// このファイルはクライアントのコードから読み込まない（scripts/seed.ts からも使うので server-only は付けない）
+type SeedDb = PgDatabase<PgQueryResultHKT, typeof schemaAll>;
+
 type NoteSource = "photo" | "sample" | "text";
 type CriteriaStatus = "not_yet" | "sometimes" | "stable";
 
+// neon-http は1文ずつ送るので、デモを戻す操作からはトランザクションの中で呼ぶ（src/app/actions.ts）
 // デモの最初の状態（11月1日のノートを取りこむ前）
-export async function seedAll(db: Db) {
+export async function seedAll(db: SeedDb) {
   await db.execute(
     sql`TRUNCATE ${examPlans}, ${themeSelections}, ${coachReviews}, ${questionSessions}, ${notes}, ${oneOnOnes}, ${criteriaChecks}, ${milestones}, ${developmentPlans}, ${students}, ${belts} RESTART IDENTITY CASCADE`,
   );
@@ -173,7 +179,7 @@ export async function seedAll(db: Db) {
 
 // デモの一周したあとの状態：11月1日のノート・問いかけ・1対1のことば・先生の承認まで済んでいる。
 // 届く内容は、先生が承認した final（デモの下書きのまま）だけ
-export async function seedDemoDone(db: Db) {
+export async function seedDemoDone(db: SeedDb) {
   const { studentId } = await seedAll(db);
   const sid = studentId(demoInputs.note.studentSlug);
   const n = demoInputs.note;
@@ -195,7 +201,8 @@ export async function seedDemoDone(db: Db) {
   await db.insert(questionSessions).values({
     noteId: note.id,
     turns: demoResponses.questioningTranscript as QuestionTurn[],
-    summary: "うけの前に、うでをはんたいにふってからうけていた。こんどは、うでをふらないで、ひき手をつよくしてみる。",
+    // まとめは本人の最後の答え（次にためすこと）
+    summary: [...demoResponses.questioningTranscript].reverse().find((t) => t.role === "student")?.text ?? "",
   });
 
   // 1対1のことば（先生の声のみ）と、先生が確かめた整理
@@ -208,7 +215,8 @@ export async function seedDemoDone(db: Db) {
     organizedConfirmedAt: confirmedAt,
   });
 
-  // 先生が承認したもの（点検の結果は残さない）
+  // 先生が承認したもの。点検の結果は入れない（デモの点検応答は「点検できなかった」なので、
+// 通ったように見せる結果を作らない。先生の画面では、承認済みで点検はまだの状態に見える）
   const draft = draftSchema.parse(demoResponses.draft);
   await db.insert(coachReviews).values({
     noteId: note.id,

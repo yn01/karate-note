@@ -245,3 +245,9 @@ export const examPlans = pgTable("exam_plans", {
     .references(() => belts.id),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// 「デモを戻す」を最後に押した日時（1行だけ）。戻すときに消さない表に置き、続けて押されるのを防ぐ
+export const demoResets = pgTable("demo_resets", {
+  id: integer("id").primaryKey(),
+  lastAt: timestamp("last_at", { withTimezone: true }).notNull(),
+});
