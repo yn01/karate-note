@@ -46,7 +46,7 @@ export function ThemeChooser({ reviewId, candidates, chosen }: Props) {
       <p className="text-sm leading-loose">
         <F>
           {
-            "{先生|せんせい}と{考|かんが}えた{候補|こうほ}だよ。{自分|じぶん}の{言葉|ことば}で{書|か}きかえてもいいよ。"
+            "ふりかえりから{出|で}てきて、{先生|せんせい}が{確|たし}かめた{候補|こうほ}だよ。{自分|じぶん}の{言葉|ことば}で{書|か}きかえてもいいよ。"
           }
         </F>
       </p>

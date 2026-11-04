@@ -6,6 +6,7 @@ import type { CheckResult, Draft } from "@/lib/claude/schemas";
 import { CRITERIA_STATUS_LABEL, type CriteriaStatus } from "@/lib/criteria";
 import { LIMITS } from "@/lib/review-fields";
 import { F } from "@/components/ui/Furigana";
+import { stripFurigana } from "@/lib/furigana";
 import { approveReview, generateDraft, runCheck } from "./actions";
 
 type Props = {
@@ -345,6 +346,9 @@ function List({
             <p className="pl-2 text-sm leading-loose">
               <span className="mr-1 text-xs text-muted">見本</span>
               <F>{x}</F>
+              <span className={`ml-2 text-xs ${stripFurigana(x).length > LIMITS.theme ? "text-shu" : "text-muted"}`}>
+                （読みを除いて {stripFurigana(x).length}/{LIMITS.theme}字）
+              </span>
             </p>
           )}
         </div>

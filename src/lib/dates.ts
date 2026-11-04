@@ -23,10 +23,17 @@ export function oneYearAgo(today = todayInJapan()): string {
   return new Date(Date.UTC(ty - 1, tm - 1, td)).toISOString().slice(0, 10);
 }
 
-// 次の稽古の日（稽古は日曜）。今日が日曜なら今日
-export function nextPracticeDay(today = todayInJapan()): string {
-  const [y, m, d] = today.split("-").map(Number);
+// 次の稽古の日（稽古は日曜）。strict なら、その日が日曜でも次の週の日曜
+function nextSunday(from: string, strict: boolean): string {
+  const [y, m, d] = from.split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d));
-  dt.setUTCDate(dt.getUTCDate() + ((7 - dt.getUTCDay()) % 7));
+  const add = (7 - dt.getUTCDay()) % 7;
+  dt.setUTCDate(dt.getUTCDate() + (strict && add === 0 ? 7 : add));
   return dt.toISOString().slice(0, 10);
+}
+
+// ノートの稽古のあとの、次の稽古の日。もう過ぎていたら、今日から見た次の稽古の日（今日が日曜なら今日）
+export function themeDateAfter(noteDate: string, today = todayInJapan()): string {
+  const after = nextSunday(noteDate, true);
+  return after < today ? nextSunday(today, false) : after;
 }

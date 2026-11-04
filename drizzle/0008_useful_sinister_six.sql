@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "theme_selections_student_date" ON "theme_selections" USING btree ("student_id","for_date");

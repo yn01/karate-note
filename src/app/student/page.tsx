@@ -5,6 +5,7 @@ import { Card, LinkButton, PageTitle } from "@/components/ui";
 import { F } from "@/components/ui/Furigana";
 import { FuriganaToggle } from "@/components/ui/FuriganaToggle";
 import { kidsDay } from "@/lib/belt-labels";
+import { todayInJapan } from "@/lib/dates";
 import { getStudentHome } from "@/lib/queries/student-home";
 import { GoalEditor } from "./GoalEditor";
 
@@ -44,7 +45,7 @@ async function StudentHome() {
 
       <Card aria-labelledby="theme">
         <p id="theme" className="text-xs text-muted">
-          <F>{`{今日|きょう}のテーマ${theme ? `　${kidsDay(theme.forDate)}` : ""}`}</F>
+          <F>{`${theme && theme.forDate > todayInJapan() ? "{次|つぎ}の{稽古|けいこ}のテーマ" : "{今日|きょう}のテーマ"}${theme ? `　${kidsDay(theme.forDate)}` : ""}`}</F>
         </p>
         <p className="font-mincho mt-1 text-2xl leading-loose font-extrabold">
           {theme ? <F>{theme.text}</F> : <F>{"まだ{決|き}まっていません"}</F>}

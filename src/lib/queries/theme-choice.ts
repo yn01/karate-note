@@ -41,6 +41,7 @@ export async function getThemeChoice(slug: string) {
 
   return {
     reviewId: row.reviewId,
+    studentId: row.studentId,
     noteDate: row.noteDate,
     candidates: toStudentView(row.final).themeCandidates,
     chosen: chosen ?? null,

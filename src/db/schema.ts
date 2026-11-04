@@ -205,7 +205,7 @@ export const themeSelections = pgTable("theme_selections", {
   isRewritten: boolean("is_rewritten").notNull().default(false),
   forDate: date("for_date").notNull(), // どの稽古の日のテーマか
   selectedAt: timestamp("selected_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (t) => [uniqueIndex("theme_selections_student_date").on(t.studentId, t.forDate)]);
 
 // Claude の呼び出しの記録（1日の上限を数える。プロンプトや出力の中身は残さない）
 export const claudeCallOutcomeEnum = pgEnum("claude_call_outcome", [
