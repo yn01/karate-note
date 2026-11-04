@@ -14,10 +14,6 @@ const nextConfig: NextConfig = {
     "/student/question": ["./skills/**/*.md"],
     "/coach/review": ["./skills/**/*.md"],
   },
-  // トップは道場生ホームへ（デモの入口）
-  async redirects() {
-    return [{ source: "/", destination: "/student", permanent: false }];
-  },
   turbopack: {
     rules: {
       "*.css": {

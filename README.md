@@ -8,12 +8,19 @@
 
 **公開 URL：https://karate-note.vercel.app/** （ログイン不要のデモモード。スマホでの表示を想定しています）
 
-1. 開くと、道場生「たくやくん」（架空・小4・10級 水色帯）のホームが出ます。黒帯への道のりと現在地、今日のテーマを見られます。
+1. 開くと、最初に「空手ノート」の画面（スプラッシュ）が出ます。「はじめる」で、道場生「たくやくん」（架空・小4・10級 水色帯）のホームへ。黒帯への道のりと現在地、今日のテーマ、本人の目標（本人が直せます）を見られます。
 2. 画面上部の「道場生／保護者／先生」で、3つの立場を行き来できます（先生＝指導者の画面）。
 3. 画面のいちばん上（切り替えバーの上）に「架空のデータです（デモ）」と出ています。
 4. ホームの「ノートを取りこむ」→「見本のノートを使う」で、架空の手書きノート（11月1日）を Claude が読み取ります。結果を確かめて直し、保存できます。スマホなら「ノートを撮る」でカメラも使えます（写真はどこにも保存しません）。
 5. ホームの「ふりかえりの質問」で、Claude の問いかけ（オープン質問 → 選択肢のある質問 → まとめ）を体験できます。道場生の画面は漢字にふりがな付きで、右上の「ふりがな」で切り替えられます。
 6. 上の「先生」→「たくやくんのノートを確認する」で、1対1のことば（稽古のあとに先生が話したこと）を「話して入力」または「見本のことばを入れる」で入れ、Claude が要点に整理します。先生が直して確定します。
+7. 同じ画面で、到達基準のチェック（先生が付けます）→ Claude の下書き → 別の Claude の点検 → 先生が直して承認、まで進められます。
+8. 承認すると、保護者の「今週のお便り」と、道場生の「次のテーマを選ぶ」（候補から選ぶか、自分の言葉で書きかえる）に届きます。承認する前は、どちらにも出ません。
+
+> **デモを戻す**
+> ログインのないデモなので、だれでも承認や上書きができます。最初の画面（[トップ](https://karate-note.vercel.app/)）のいちばん下にある「デモを戻す」で、いつでも架空のデータを入れ直せます。
+> - **最初から**：11月1日のノートを取りこむ前。ノートの取り込みから承認まで、流れを一から試せます。
+> - **一周したあと**：11月1日のノート・問いかけ・1対1・先生の承認まで済んだ状態。お便りや次のテーマがすぐ見られます。
 
 > **デモモードについて**
 > 審査のために、ログインなしで3つの立場の画面をすべて見られるようにしています。上の切り替えバーは、このデモのためのものです。
@@ -21,9 +28,9 @@
 
 | 立場 | URL | いまできること |
 | --- | --- | --- |
-| 道場生 | [/student](https://karate-note.vercel.app/student) | 黒帯への道のり・現在地・今日のテーマ、ノートの取り込み（[/student/note](https://karate-note.vercel.app/student/note)）、ふりかえりの質問（[/student/question](https://karate-note.vercel.app/student/question)） |
-| 保護者 | [/parent](https://karate-note.vercel.app/parent) | 準備中（今週のお便り） |
-| 先生（指導者） | [/coach](https://karate-note.vercel.app/coach) | ノートの確認（[/coach/review](https://karate-note.vercel.app/coach/review)）：1対1のことばの入力と整理。一覧・下書き・承認は準備中 |
+| 道場生 | [/student](https://karate-note.vercel.app/student) | 黒帯への道のり・現在地・今日のテーマ・本人の目標、ノートの取り込み（[/student/note](https://karate-note.vercel.app/student/note)）、ふりかえりの質問（[/student/question](https://karate-note.vercel.app/student/question)）、次のテーマを選ぶ（[/student/theme](https://karate-note.vercel.app/student/theme)） |
+| 保護者 | [/parent](https://karate-note.vercel.app/parent) | 今週のお便り（先生が承認したものだけ） |
+| 先生（指導者） | [/coach](https://karate-note.vercel.app/coach) | 道場生一覧と審査予定の設定、ノートの確認（[/coach/review](https://karate-note.vercel.app/coach/review)）：1対1のことば・到達基準のチェック・下書き・点検・直して承認 |
 
 （機能が増えたら、この表と手順を更新します。）
 
@@ -72,9 +79,10 @@ npm run dev                  # http://localhost:3000
 | `npm run build` | 本番ビルド |
 | `npm run typecheck` | 型チェック |
 | `npm run lint` | ESLint |
+| `npm test` | テスト（Vitest）。承認前のものを道場生・保護者に届けないこと、ふりがな・日付などの小さな関数 |
 | `npm run db:generate` | スキーマ（`src/db/schema.ts`）からマイグレーションを作る |
 | `npm run db:migrate` | マイグレーションを DB に当てる |
-| `npm run db:seed` | 合成データを入れ直す |
+| `npm run db:seed` | 合成データを入れ直す（画面の「デモを戻す」の「最初から」と同じ） |
 | `npm run claude:smoke` | Claude の呼び出しの土台を確かめる（本物1回・デモモード・上限） |
 
 ## Claude の使い分け

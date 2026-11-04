@@ -107,7 +107,8 @@ skills/ に指導者の知見をMarkdownで置き、場面ごとにプロンプ�
 - `npm run lint`／`npm run build`
 - `npm run db:generate`：`src/db/schema.ts` からマイグレーションを作る
 - `npm run db:migrate`：マイグレーションを Neon に当てる
-- `npm run db:seed`：data/seed/ の合成データを入れ直す（何度流しても同じ）
+- `npm test`：テスト（Vitest。原則のテスト src/principles.test.ts を含む）
+- `npm run db:seed`：data/seed/ の合成データを入れ直す（何度流しても同じ。中身は src/db/seed-core.ts で、画面の「デモを戻す」と共有）
 - `npm run claude:smoke`：Claude の呼び出しの土台を確かめる（本物を1回呼ぶ）
 
 ## Claude の呼び出し

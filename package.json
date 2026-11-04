@@ -11,7 +11,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx --env-file=.env.local scripts/seed.ts",
-    "claude:smoke": "tsx --env-file=.env.local --conditions=react-server scripts/claude-smoke.ts"
+    "claude:smoke": "tsx --env-file=.env.local --conditions=react-server scripts/claude-smoke.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",
@@ -33,7 +34,8 @@
     "eslint-config-next": "16.4.4",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   },
   "engines": {
     "node": ">=20.12"
