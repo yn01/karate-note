@@ -3,7 +3,7 @@
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { developmentPlans, getDb, students } from "@/db";
-import { stripFurigana } from "@/lib/furigana";
+import { plainStudentText, stripFurigana } from "@/lib/furigana";
 import { GOAL_LIMITS } from "@/lib/goals";
 
 const DEMO_STUDENT = "takuya";
@@ -15,7 +15,9 @@ export async function saveSelfGoals(input: string[]): Promise<SaveGoalsResult> {
   if (!Array.isArray(input))
     return { ok: false, message: "もう{一度|いちど}{書|か}いてね" };
   const goals = input
-    .map((g) => stripFurigana(String(g ?? "")).trim())
+    .slice(0, GOAL_LIMITS.count * 2)
+    .filter((g): g is string => typeof g === "string")
+    .map((g) => plainStudentText(g).trim())
     .filter(Boolean)
     .slice(0, GOAL_LIMITS.count);
   if (goals.some((g) => g.length > GOAL_LIMITS.length))

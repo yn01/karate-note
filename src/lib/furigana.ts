@@ -40,3 +40,8 @@ export function clampFurigana(source: string, max: number): string {
   }
   return out + source.slice(last).slice(0, max - shown);
 }
+
+// 道場生が書いた文：読みの印に使う文字を取りのぞく（自分で読みの印を作れないように）
+export function plainStudentText(source: string): string {
+  return source.replace(/[{}|]/g, "");
+}
