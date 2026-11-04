@@ -6,6 +6,7 @@ import { F } from "@/components/ui/Furigana";
 import { FuriganaToggle } from "@/components/ui/FuriganaToggle";
 import { kidsDay } from "@/lib/belt-labels";
 import { getStudentHome } from "@/lib/queries/student-home";
+import { GoalEditor } from "./GoalEditor";
 
 // デモの主役（架空の道場生）
 const DEMO_STUDENT = "takuya";
@@ -29,7 +30,7 @@ async function StudentHome() {
       </p>
     );
   }
-  const { student, road, current, next, theme, nextExam } = home;
+  const { student, road, current, next, theme, nextExam, selfGoals } = home;
 
   return (
     <div className="space-y-5">
@@ -57,7 +58,12 @@ async function StudentHome() {
         <LinkButton href="/student/question" variant="secondary">
           <F>{"ふりかえりの{質問|しつもん}"}</F>
         </LinkButton>
+        <LinkButton href="/student/theme" variant="secondary">
+          <F>{"{次|つぎ}のテーマを{選|えら}ぶ"}</F>
+        </LinkButton>
       </div>
+
+      {selfGoals && <GoalEditor initial={selfGoals} />}
 
       <BeltRoad road={road} currentId={current?.id ?? null} nextId={next?.id ?? null} nextExam={nextExam} />
     </div>

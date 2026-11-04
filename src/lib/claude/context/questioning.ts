@@ -1,6 +1,7 @@
 // 場面3 問いかけに渡す文脈を DB と skills から組み立てる（サーバー側だけ）。
 // 渡さないもの：到達基準の状態（点数）、Claude が整理した1対1のことば（承認前のため）。
 import "server-only";
+import { stripFurigana } from "@/lib/furigana";
 import { and, asc, desc, eq, lt } from "drizzle-orm";
 import { developmentPlans, getDb, milestones, notes, oneOnOnes } from "@/db";
 import { loadSkill, type Skill } from "@/lib/skills";
@@ -56,7 +57,7 @@ export async function buildQuestioningContext(noteId: number): Promise<Questioni
     pastNotes: pastNotes.map((n) => ({ date: n.date, theme: text(n.theme), good: text(n.good), improve: text(n.improve) })),
     plan: plan
       ? {
-          selfGoals: plan.selfGoals,
+          selfGoals: plan.selfGoals.map(stripFurigana),
           focus: text(plan.focus),
           // 先生が決めた審査予定があればそれを先に（育成計画のマイルストーンより新しい）
           nextMilestone: [examText, next ? `${next.dueLabel}：${next.description}` : ""].filter(Boolean).join("／"),

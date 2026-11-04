@@ -3,6 +3,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { Card, PageTitle, SectionTitle } from "@/components/ui";
 import { hashDraft } from "@/lib/draft-hash";
+import { stripFurigana } from "@/lib/furigana";
 import { getCoachReview } from "@/lib/queries/coach-review";
 import demoInputs from "../../../../data/seed/demo-inputs.json";
 import { CriteriaEditor } from "./CriteriaEditor";
@@ -77,7 +78,7 @@ async function Review() {
           <div className="space-y-1">
             <p className="text-xs font-bold text-muted">一人ひとり：育成計画</p>
             <dl className="space-y-1">
-              <Row label="本人の目標" value={plan.selfGoals.join("／")} />
+              <Row label="本人の目標" value={plan.selfGoals.map(stripFurigana).join("／")} />
               <Row label="保護者の願い" value={plan.guardianWish} />
               <Row label="今期の重点" value={plan.focus} />
               <Row label="強み" value={plan.strengths.join("／")} />

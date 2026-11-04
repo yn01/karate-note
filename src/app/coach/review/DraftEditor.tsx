@@ -5,6 +5,7 @@ import { buttonClass, Card, Hanko, SectionTitle } from "@/components/ui";
 import type { CheckResult, Draft } from "@/lib/claude/schemas";
 import { CRITERIA_STATUS_LABEL, type CriteriaStatus } from "@/lib/criteria";
 import { LIMITS } from "@/lib/review-fields";
+import { F } from "@/components/ui/Furigana";
 import { approveReview, generateDraft, runCheck } from "./actions";
 
 type Props = {
@@ -172,8 +173,9 @@ export function DraftEditor({ noteId, criteria, saved }: Props) {
               label="次回テーマの候補（道場生が選ぶ）"
               items={draft.themeCandidates}
               max={LIMITS.themes}
-              maxLength={LIMITS.theme}
+              maxLength={LIMITS.themeMarkup}
               onChange={(xs) => edit((d) => ({ ...d, themeCandidates: xs }))}
+              furigana
             />
 
             <div className="space-y-2">
@@ -312,18 +314,22 @@ function List({
   onChange,
   max = LIMITS.list,
   maxLength = LIMITS.item,
+  furigana = false,
 }: {
   label: string;
   items: string[];
   onChange: (xs: string[]) => void;
   max?: number;
   maxLength?: number;
+  furigana?: boolean; // 道場生に届く文：{漢字|よみ} の読みを付けられる。ふりがな付きの見本を出す
 }) {
   return (
     <fieldset className="space-y-1">
       <legend className="text-sm font-bold">{label}</legend>
+      {furigana && <p className="text-xs text-muted">{"{漢字|よみ} の形で読みを付けられます（道場生の画面でふりがなになります）。"}</p>}
       {items.map((x, i) => (
-        <div key={i} className="flex gap-2">
+        <div key={i} className="space-y-1">
+          <div className="flex gap-2">
           <input
             value={x}
             onChange={(e) => onChange(items.map((y, j) => (j === i ? e.target.value : y)))}
@@ -334,6 +340,13 @@ function List({
           <button type="button" onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label={`${label} ${i + 1} を消す`} className="px-2 text-muted">
             ×
           </button>
+          </div>
+          {furigana && x.trim() && (
+            <p className="pl-2 text-sm leading-loose">
+              <span className="mr-1 text-xs text-muted">見本</span>
+              <F>{x}</F>
+            </p>
+          )}
         </div>
       ))}
       {items.length < max && (
