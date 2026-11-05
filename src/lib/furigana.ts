@@ -45,3 +45,23 @@ export function clampFurigana(source: string, max: number): string {
 export function plainStudentText(source: string): string {
   return source.replace(/[{}|]/g, "");
 }
+
+// Claude の出力の読みの印の書きそこない（{time|} など）を取りのぞく。正しい {漢字|よみ} はそのまま残す
+// 書きそこないの中は、英字だけを消して、数字・々・句読点などの中身は残す。閉じていない {漢字|よみ は漢字だけ残す
+function scrub(text: string): string {
+  return text
+    .replace(/\{[^{}]*\}/gu, (x) => x.replace(/\|[^{}]*\}$/u, "}").replace(/[{}|]/g, "").replace(/[A-Za-z]+/g, ""))
+    .replace(/\{([^{}|]*)\|[ぁ-ゖー]*/gu, "$1")
+    .replace(/[{}|]/g, "");
+}
+export function cleanFurigana(source: string): string {
+  const out: string[] = [];
+  let last = 0;
+  for (const m of source.matchAll(PATTERN)) {
+    out.push(scrub(source.slice(last, m.index)));
+    out.push(READING.test(m[2]) ? m[0] : m[1]);
+    last = m.index + m[0].length;
+  }
+  out.push(scrub(source.slice(last)));
+  return out.join("").trim();
+}

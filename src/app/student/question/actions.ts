@@ -5,9 +5,9 @@ import { eq, sql } from "drizzle-orm";
 import { getDb, notes, questionSessions, students, type QuestionTurn } from "@/db";
 import { callScene } from "@/lib/claude/call";
 import { buildQuestioningContext } from "@/lib/claude/context/questioning";
-import { MAX_QUESTIONS, questioningMessages, questioningSystem } from "@/lib/claude/prompts/questioning";
+import { MAX_QUESTIONS, questioningMessages, questioningSystem, DISTRESS } from "@/lib/claude/prompts/questioning";
 import type { NextQuestion } from "@/lib/claude/schemas";
-import { clampFurigana, stripFurigana } from "@/lib/furigana";
+import { clampFurigana, cleanFurigana, stripFurigana } from "@/lib/furigana";
 
 const DEMO_STUDENT = "takuya";
 const MAX_ANSWER = 200;
@@ -21,7 +21,6 @@ export type AskResult =
   | { ok: false; message: string };
 
 // 体や心のつらさを書いたときは、質問を続けずに大人へつなぐ（プロンプトにも同じ決まりがある）
-const DISTRESS = /いたい|痛い|けが|怪我|こわい|怖い|やめたい|いじめ|しにたい|死にたい|たたかれ|叩かれ/;
 const DISTRESS_REPLY = "{教|おし}えてくれてありがとう。{先生|せんせい}やおうちの{人|ひと}に{伝|つた}えてね。";
 const CLOSING = "ここまで{自分|じぶん}の{言葉|ことば}でふりかえれたね。";
 
@@ -93,9 +92,10 @@ function done(text: string, summary: string): NextQuestion {
 // 長さをそろえ、選択肢のない closed は open にする（画面が止まらないように）
 function normalize(q: NextQuestion): NextQuestion {
   // 長さは読みを外した文字数で数え、印の途中では切らない
-  const choices = [...new Set(q.choices.map((c) => clampFurigana(c.trim(), 40)).filter(Boolean))].slice(0, 4);
+  const choices = [...new Set(q.choices.map((c) => clampFurigana(cleanFurigana(c), 40)).filter(Boolean))].slice(0, 4);
   const type = q.type === "closed" && choices.length >= 2 ? "closed" : "open";
-  return { ...q, type, text: clampFurigana(q.text.trim(), 120), choices: type === "closed" ? choices : [] };
+  if (q.type === "closed" && type === "open") console.warn("[question] 選択肢が足りないので自由に答える質問にしました");
+  return { ...q, type, text: clampFurigana(cleanFurigana(q.text), 120), choices: type === "closed" ? choices : [] };
 }
 
 // クライアントから来たやり取りを確かめる（順番・署名・長さ）
