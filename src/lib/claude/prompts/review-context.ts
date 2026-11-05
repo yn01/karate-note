@@ -34,7 +34,7 @@ export function reviewContextText(ctx: ReviewContext): string {
       ].join("\n")
     : "（なし）";
   const criteria = ctx.criteria
-    .map((c) => `- ${c.key}｜${c.label}｜先生のチェック：${c.status ? LABEL[c.status] : "まだ付けていない"}`)
+    .map((c) => `- ${c.key}｜${c.label}｜先生のチェック：${c.status ? LABEL[c.status] : "なし（未記入）"}`)
     .join("\n");
 
   return `<student>
