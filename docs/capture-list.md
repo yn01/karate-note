@@ -4,6 +4,8 @@ Claude Code は、タスクやコミットの区切りで「きっかけ」に�
 iPhone の画面はコントロールセンターの画面収録、Mac の画面は Shift＋Command＋5。保存したらファイル名を「カット番号_内容」にする。
 動画は Claude Code で作る（[schedule.md](schedule.md) の T13）。撮った素材はリポジトリの外（例：~/Dev/karate-note-video/assets/）に置き、公開リポジトリには入れない。
 
+**11/5 から：アプリの画面の録画・キャプチャは Claude Code がブラウザを動かして撮る**（~/Dev/karate-note-video/capture/record.mjs）。作者が撮るのは実写（道場写真・手元・ノート）と Claude Code の画面（Plan・レビュー役の指摘）だけ。それまでに撮った素材は assets/old/ にある。
+
 | 済 | ID | きっかけ | 撮るもの | 道具・長さ | 使う場所 |
 | --- | --- | --- | --- | --- | --- |
 | [x] | C01 | 初めて公開URLが開いたとき（mvp-0） | iPhoneで公開URLを開き、道場生ホームを表示する | iPhone画面収録・30秒 | 予備素材 |
