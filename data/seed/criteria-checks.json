@@ -1,7 +1,21 @@
 {
-  "source": "plan.md「8」の下書き（到達基準との照合）にある、指導者が付けた状態。架空のデータ。skills/kata/heian-nidan.md の到達基準が書けたら、要点の名前をそちらに合わせる",
+  "source": "先生（指導者）が付けた到達基準の状態。架空のデータ。要点は skills/kata/heian-nidan.md の4つ（順番・受け・立ち方・演武線）。立ち方と演武線は、先生の見立てがまだないので入れていない（未記入）",
   "checks": [
-    { "studentSlug": "takuya", "kata": "heian-nidan", "pointKey": "order", "pointLabel": "順番どおり最後まで通せる", "status": "stable", "checkedAt": "2026-10-25T12:10:00+09:00" },
-    { "studentSlug": "takuya", "kata": "heian-nidan", "pointKey": "uke-start", "pointLabel": "受けの始まり（予備動作がない）", "status": "not_yet", "checkedAt": "2026-10-25T12:10:00+09:00" }
+    {
+      "studentSlug": "takuya",
+      "kata": "heian-nidan",
+      "pointKey": "order",
+      "pointLabel": "順番どおり最後まで通せる",
+      "status": "stable",
+      "checkedAt": "2026-10-25T12:10:00+09:00"
+    },
+    {
+      "studentSlug": "takuya",
+      "kata": "heian-nidan",
+      "pointKey": "uke",
+      "pointLabel": "受けを正確に",
+      "status": "not_yet",
+      "checkedAt": "2026-10-25T12:10:00+09:00"
+    }
   ]
 }
