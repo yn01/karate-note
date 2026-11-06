@@ -40,7 +40,7 @@
 
 ![しくみの図：Claude の下書きは、先生が承認したものだけが家庭に届く](docs/architecture.png)
 
-道場生とのやりとり（ノートの読み取り・問いかけ）はその場で返し、答えは教えない。先生あての下書きは別の Claude が点検し、先生が直して承認したものだけが保護者と道場生に届く。図のもとは [docs/architecture.html](docs/architecture.html)。
+道場生とのやりとり（ノートの読み取り・問いかけ）はその場で返し、答えは教えない。先生あての下書きは別の Claude が点検し、先生が直して承認したものだけが保護者と道場生に届く。図のもとは [docs/architecture.svg](docs/architecture.svg)。
 
 ## なぜ作ったか
 
@@ -235,4 +235,4 @@ Next.js（App Router・TypeScript）、Tailwind CSS、Postgres（Neon）＋ Driz
 | [docs/metrics.md](docs/metrics.md) | 見積もりと実績、レビュー指摘の件数 |
 | [docs/devlog.md](docs/devlog.md) | 決めたこと・詰まったこと・次にやること |
 | [docs/capture-list.md](docs/capture-list.md) | 動画と README の素材の撮影リスト |
-| [docs/architecture.html](docs/architecture.html) | しくみの図（[画像](docs/architecture.png)） |
+| [docs/architecture.svg](docs/architecture.svg) | しくみの図（[画像](docs/architecture.png)） |
