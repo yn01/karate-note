@@ -10,16 +10,16 @@ const ROLES = [
     text: "稽古のあと、紙のノートを撮る。Claude が読み取り、答えを教えずに問いかけで、次にためすことを本人が決める。",
   },
   {
-    tone: "coach" as const,
-    who: "先生",
-    color: "text-sumi",
-    text: "1対1で話したことは、その場で文字に。育成計画と形の知見をもとに Claude が下書きし、別の Claude が点検。先生が直して承認する。",
-  },
-  {
     tone: "parent" as const,
     who: "保護者",
     color: "text-wakatake",
     text: "先生が承認したお便りだけが届く。見てほしいところ、声かけのヒント、家でできる安全な自主練。",
+  },
+  {
+    tone: "coach" as const,
+    who: "先生",
+    color: "text-sumi",
+    text: "1対1で話したことは、その場で文字に。育成計画と形の知見をもとに Claude が下書きし、別の Claude が点検。先生が直して承認する。",
   },
 ];
 
