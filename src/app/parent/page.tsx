@@ -1,5 +1,6 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { Loading } from "@/components/ui/Loading";
 import { Card, PageTitle } from "@/components/ui";
 import { kataOptions } from "@/lib/kata";
 import { DateSelect } from "@/components/DateSelect";
@@ -18,9 +19,7 @@ export default function ParentPage({ searchParams }: PageProps<"/parent">) {
         <p className="text-xs text-muted">選手を支える人へ</p>
       </div>
       <Suspense
-        fallback={
-          <p className="py-10 text-center text-sm text-muted">読み込み中…</p>
-        }
+        fallback={<Loading />}
       >
         <Letter searchParams={searchParams} />
       </Suspense>

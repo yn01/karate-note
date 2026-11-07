@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { Loading } from "@/components/ui/Loading";
 import { Card, PageTitle } from "@/components/ui";
 import { F } from "@/components/ui/Furigana";
 import { FuriganaToggle } from "@/components/ui/FuriganaToggle";
@@ -27,7 +28,7 @@ export default function QuestionPage({ searchParams }: PageProps<"/student/quest
       <PageTitle>
         <F>{"ふりかえりの{質問|しつもん}"}</F>
       </PageTitle>
-      <Suspense fallback={<p className="py-10 text-center text-sm text-muted">読み込み中…</p>}>
+      <Suspense fallback={<Loading kids />}>
         <Question searchParams={searchParams} />
       </Suspense>
     </div>

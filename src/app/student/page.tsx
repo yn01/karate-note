@@ -1,5 +1,6 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { Loading } from "@/components/ui/Loading";
 import { BeltRoad } from "@/components/BeltRoad";
 import { Card, LinkButton, PageTitle } from "@/components/ui";
 import { F } from "@/components/ui/Furigana";
@@ -14,7 +15,7 @@ const DEMO_STUDENT = "takuya";
 
 export default function StudentHomePage() {
   return (
-    <Suspense fallback={<p className="py-10 text-center text-sm text-muted">読み込み中…</p>}>
+    <Suspense fallback={<Loading kids />}>
       <StudentHome />
     </Suspense>
   );

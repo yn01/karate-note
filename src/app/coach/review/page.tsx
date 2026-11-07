@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { Loading } from "@/components/ui/Loading";
 import { Card, PageTitle, SectionTitle } from "@/components/ui";
 import { draftSchema, fillDraftDefaults } from "@/lib/claude/schemas";
 import { hashDraft } from "@/lib/draft-hash";
@@ -27,7 +28,7 @@ export default function CoachReviewPage({ searchParams }: PageProps<"/coach/revi
         ← 道場生一覧
       </Link>
       <PageTitle>ノートの確認</PageTitle>
-      <Suspense fallback={<p className="py-10 text-center text-sm text-muted">読み込み中…</p>}>
+      <Suspense fallback={<Loading />}>
         <Review searchParams={searchParams} />
       </Suspense>
     </div>

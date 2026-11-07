@@ -1,5 +1,6 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { Loading } from "@/components/ui/Loading";
 import { Card, LinkButton, PageTitle } from "@/components/ui";
 import { F } from "@/components/ui/Furigana";
 import { FuriganaToggle } from "@/components/ui/FuriganaToggle";
@@ -18,11 +19,7 @@ export default function ThemePage() {
         <FuriganaToggle />
       </div>
       <Suspense
-        fallback={
-          <p className="py-10 text-center text-sm text-muted">
-            よみこみちゅう…
-          </p>
-        }
+        fallback={<Loading kids />}
       >
         <Choice />
       </Suspense>

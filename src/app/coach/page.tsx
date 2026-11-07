@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { Loading } from "@/components/ui/Loading";
 import { Card, PageTitle } from "@/components/ui";
 import { beltHex } from "@/lib/belt-labels";
 import { todayInJapan } from "@/lib/dates";
@@ -14,7 +15,7 @@ export default function CoachListPage() {
   return (
     <div className="space-y-4">
       <PageTitle>道場生一覧</PageTitle>
-      <Suspense fallback={<p className="py-10 text-center text-sm text-muted">読み込み中…</p>}>
+      <Suspense fallback={<Loading />}>
         <List />
       </Suspense>
     </div>
