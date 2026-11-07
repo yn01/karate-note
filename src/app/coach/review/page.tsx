@@ -2,6 +2,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { Card, PageTitle, SectionTitle } from "@/components/ui";
+import { draftSchema } from "@/lib/claude/schemas";
 import { hashDraft } from "@/lib/draft-hash";
 import { stripFurigana } from "@/lib/furigana";
 import { getCoachReview } from "@/lib/queries/coach-review";
@@ -114,8 +115,11 @@ function reviewProps(review: NonNullable<Awaited<ReturnType<typeof getCoachRevie
   const approved = review.status === "approved";
   const newer =
     approved && !!review.draft && !!review.draftUpdatedAt && !!review.approvedAt && review.draftUpdatedAt > review.approvedAt;
-  const base = (newer ? review.draft : (review.final ?? review.draft)) ?? null;
-  if (!base) return null;
+  const raw = (newer ? review.draft : (review.final ?? review.draft)) ?? null;
+  if (!raw) return null;
+  // 古い下書きに残った項目（手本 model など）を捨ててから使う（点検・承認のハッシュとそろえる）
+  const parsed = draftSchema.safeParse(raw);
+  const base = parsed.success ? parsed.data : raw;
   const hash = hashDraft(base);
   return {
     base,

@@ -1,6 +1,6 @@
-// Claude を呼ぶ5場面のモデル設定（モデル名はここ1か所にまとめる。README の表と同じ）
+// Claude を呼ぶ6場面のモデル設定（モデル名はここ1か所にまとめる。README の表と同じ）
 // Opus 5.5 / Sonnet 5.5 / Haiku 5.5 は思考を止められないので、速さは effort で調整する。
-export type SceneName = "noteReading" | "oneOnOne" | "questioning" | "draft" | "check";
+export type SceneName = "noteReading" | "oneOnOne" | "questioning" | "draft" | "check" | "kataCompare";
 export type Effort = "low" | "medium" | "high" | "xhigh" | "max";
 
 export type SceneConfig = {
@@ -66,6 +66,17 @@ export const SCENES: Record<SceneName, SceneConfig> = {
     timeoutMs: 90_000,
     maxRetries: 0,
     dailyLimit: 40,
+    serverFallback: true,
+  },
+  kataCompare: {
+    label: "6 形の見比べ",
+    model: "claude-opus-5-5", // 2枚の写真（手本と練習）を見比べる力
+    effort: "low",
+    maxTokens: 3000,
+    timeoutMs: 45_000,
+    maxRetries: 1,
+    // ログインなしで誰でも呼べるので、ほかの場面の枠を使い切らないよう小さめに
+    dailyLimit: 30,
     serverFallback: true,
   },
 };

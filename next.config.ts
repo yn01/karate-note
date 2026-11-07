@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
     // 指導者の知見（skills）をプロンプトに読み込む
     "/student/question": ["./skills/**/*.md"],
     "/coach/review": ["./skills/**/*.md"],
+    // 形の見比べ：先生の知見、手本の写真、見本の練習の写真
+    "/parent": ["./skills/**/*.md", "./public/kata/**/*.jpg", "./public/samples/practice-heian-nidan-01.jpg"],
   },
   turbopack: {
     rules: {

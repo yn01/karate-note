@@ -346,7 +346,6 @@ function clampDraft(d: Draft): Draft {
       watchPoints: list(d.guardianLetter.watchPoints, LIMITS.letterList, LIMITS.item),
       cheerHints: list(d.guardianLetter.cheerHints, LIMITS.letterList, LIMITS.item),
       effort: str(d.guardianLetter.effort, LIMITS.text),
-      model: str(d.guardianLetter.model, LIMITS.text),
     },
   };
 }
@@ -360,6 +359,6 @@ function emptyDraft(): Draft {
     homePractice: [],
     safety: [],
     planRevision: "",
-    guardianLetter: { coachWords: "", watchPoints: [], cheerHints: [], effort: "", model: "" },
+    guardianLetter: { coachWords: "", watchPoints: [], cheerHints: [], effort: "" },
   };
 }

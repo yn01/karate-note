@@ -6,6 +6,7 @@ import { buttonClass, Card, Hanko } from "@/components/ui";
 import { F } from "@/components/ui/Furigana";
 import type { NoteReading } from "@/lib/claude/schemas";
 import { todayInJapan } from "@/lib/dates";
+import { shrinkImage } from "@/lib/shrink-image";
 import { readNote, saveNote } from "./actions";
 
 type Source = "photo" | "sample" | "text";
@@ -253,7 +254,6 @@ function TextField({ label, name, value }: { label: string; name: string; value:
 }
 
 const MAX_FIELD = 200;
-const MAX_UPLOAD = 3.4 * 1024 * 1024; // サーバーの上限（3.5MB）より少し小さく
 
 const isEmptyReading = (r: NoteReading) => !r.theme && !r.good && !r.improve;
 
@@ -265,28 +265,3 @@ const fitReading = (r: NoteReading): NoteReading => ({
   improve: r.improve.slice(0, MAX_FIELD),
 });
 
-// 写真を長辺 1600px の JPEG に縮める（iPhone の写真は数MBあるため）。大きければ品質を下げる
-async function shrinkImage(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
-  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("canvas");
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  try {
-    for (const quality of [0.85, 0.7, 0.5]) {
-      const blob = await new Promise<Blob>((resolve, reject) =>
-        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("toBlob"))), "image/jpeg", quality),
-      );
-      if (blob.size <= MAX_UPLOAD) return blob;
-    }
-    throw new Error("too large");
-  } finally {
-    // Safari のキャンバスのメモリを早く手放す
-    canvas.width = 0;
-    canvas.height = 0;
-  }
-}

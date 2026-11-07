@@ -1,8 +1,9 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { UkeIllustration } from "@/components/illustrations/UkeIllustration";
 import { Card, PageTitle } from "@/components/ui";
+import { kataOptions } from "@/lib/kata";
 import { getGuardianLetter } from "@/lib/queries/guardian-letter";
+import { KataCompare } from "./KataCompare";
 
 // デモの主役（架空の道場生）の保護者
 const DEMO_STUDENT = "takuya";
@@ -27,12 +28,17 @@ export default function ParentPage() {
 
 async function Letter() {
   await connection();
-  const data = await getGuardianLetter(DEMO_STUDENT);
+  const [data, katas] = await Promise.all([getGuardianLetter(DEMO_STUDENT), kataOptions()]);
   if (!data) {
     return (
-      <Card tone="parent" className="text-center text-sm text-muted">
-        今週のお便りは、先生が準備しています。
-      </Card>
+      <div className="space-y-4">
+        <Card tone="parent" className="text-center text-sm text-muted">
+          今週のお便りは、先生が準備しています。
+        </Card>
+        <Section title="手本と見比べる">
+          <KataCompare katas={katas} />
+        </Section>
+      </div>
     );
   }
   const { studentName, noteDate, approvedAt, letter } = data;
@@ -88,19 +94,9 @@ async function Letter() {
         </Section>
       )}
 
-      {g.model && (
-        <Section title="手本">
-          <p>{g.model}</p>
-          {/* イラストは先生が承認した手本の文があるときだけ添える */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <UkeIllustration kind="with" />
-            <UkeIllustration kind="without" />
-          </div>
-          <p className="text-xs text-muted">
-            イラストは動きのイメージです（先生が確かめて差し替えます）。
-          </p>
-        </Section>
-      )}
+      <Section title="手本と見比べる">
+        <KataCompare katas={katas} />
+      </Section>
 
       {letter.homePractice.length > 0 && (
         <Section title="家でできる自主練">

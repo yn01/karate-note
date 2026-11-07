@@ -7,7 +7,7 @@ export type Skill = { path: string; body: string };
 
 const SKILLS_DIR = join(process.cwd(), "skills");
 // 先頭の「<!-- 下書き」の行（空白のゆれも見る）
-const DRAFT_MARK = /^\uFEFF?\s*<!--\s*下書き/;
+export const DRAFT_MARK = /^\uFEFF?\s*<!--\s*下書き/;
 let templateLines: Set<string> | undefined;
 
 type LoadOptions = {

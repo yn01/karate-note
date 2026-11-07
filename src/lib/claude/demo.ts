@@ -30,5 +30,7 @@ function pickRaw(scene: SceneName, opts: DemoOptions): unknown {
       return demo.draft;
     case "check":
       return demo.check;
+    case "kataCompare":
+      return demo.kataCompare;
   }
 }

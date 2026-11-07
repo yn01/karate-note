@@ -72,3 +72,17 @@ describe("ことば", () => {
     }
   });
 });
+
+describe("保護者・道場生の画面から Claude に直接出すのは、決まった場面だけ", () => {
+  it("保護者の画面が呼ぶのは形の見比べ（場面6）だけで、判定のことばと知見の ID を確かめてから出す", () => {
+    for (const f of files("src/app/parent")) {
+      const src = read(f);
+      const scenes = [...src.matchAll(/callScene\(\s*"(\w+)"/g)].map((m) => m[1]);
+      for (const sc of scenes) expect(sc, `${f} が ${sc} を呼んでいる`).toBe("kataCompare");
+      if (scenes.length > 0) {
+        expect(src, `${f} が判定のことばを確かめていない`).toMatch(/hasVerdict\(/);
+        expect(src, `${f} が知見の ID を確かめていない`).toMatch(/basisIsValid\(/);
+      }
+    }
+  });
+});
