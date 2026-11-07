@@ -87,7 +87,7 @@ export function KataCompare({ katas, suggestedStep }: { katas: KataOption[]; sug
   return (
     <div className="space-y-3">
       <p className="rounded-lg bg-washi px-3 py-2 text-xs leading-relaxed">
-        形（かた）は、決められた順序で攻撃や防御を行う、空手の稽古です。平安二段は、道場生が序盤で習う形の一つです。
+        空手には、相手と向き合う「組手（くみて）」と、決められた順序で攻撃や防御を行う「形（かた）」があります。ここで見比べるのは形です。平安二段は、道場生が序盤で習う形の一つです。
       </p>
       <p className="text-sm text-muted">
         {suggestedStep
