@@ -115,7 +115,7 @@ export function NoteCapture() {
         {status}
       </p>
       {error && (
-        <p role="alert" className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
+        <p role="alert" className="rounded-lg border border-shu bg-paper p-3 text-sm font-bold text-shu">
           <F>{error}</F>
         </p>
       )}
@@ -148,7 +148,7 @@ export function NoteCapture() {
       {step.name === "reading" && (
         <div className="space-y-3 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- その場で作った画像のプレビュー */}
-          <img src={step.preview} alt="送ったノート" className="mx-auto max-h-60 border border-line" />
+          <img src={step.preview} alt="送ったノート" className="mx-auto max-h-60 rounded-lg border border-line" />
           <p className="font-bold">
             <F>{"{読|よ}み{取|と}っています…"}</F>
           </p>
@@ -158,12 +158,12 @@ export function NoteCapture() {
       {step.name === "confirm" && (
         <form action={onSave} className="space-y-4">
           {step.fromDemo && (
-            <p className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
+            <p className="rounded-lg border border-shu bg-paper p-3 text-sm font-bold text-shu">
               <F>{"{読|よ}み{取|と}れなかったので、{見本|みほん}を{出|だ}しています。{自分|じぶん}のノートとちがったら{直|なお}してね。"}</F>
             </p>
           )}
           {step.source !== "text" && !step.fromDemo && isEmptyReading(step.reading) && (
-            <p className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
+            <p className="rounded-lg border border-shu bg-paper p-3 text-sm font-bold text-shu">
               <F>{"うまく{読|よ}めませんでした。{自分|じぶん}で{書|か}いてね。"}</F>
             </p>
           )}
@@ -174,7 +174,7 @@ export function NoteCapture() {
           )}
           {step.preview && (
             /* eslint-disable-next-line @next/next/no-img-element -- その場で作った画像のプレビュー */
-            <img src={step.preview} alt="送ったノート" className="mx-auto max-h-40 border border-line" />
+            <img src={step.preview} alt="送ったノート" className="mx-auto max-h-40 rounded-lg border border-line" />
           )}
           <input type="hidden" name="source" value={step.source} />
           <Field label="{日付|ひづけ}">
@@ -183,7 +183,7 @@ export function NoteCapture() {
               name="date"
               required
               defaultValue={step.reading.date}
-              className="w-full rounded border border-line bg-paper p-3"
+              className="w-full rounded-lg border border-line bg-paper p-3"
             />
           </Field>
           <TextField label="{稽古|けいこ}{前|まえ}　{今日|きょう}のテーマ（{何|なに}をがんばる？）" name="theme" value={step.reading.theme} />
@@ -246,7 +246,7 @@ function TextField({ label, name, value }: { label: string; name: string; value:
         defaultValue={value}
         rows={2}
         maxLength={200}
-        className="w-full rounded border border-line bg-paper p-3 text-lg"
+        className="w-full rounded-lg border border-line bg-paper p-3 text-lg"
       />
     </Field>
   );

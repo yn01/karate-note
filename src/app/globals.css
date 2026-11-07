@@ -6,6 +6,7 @@
   --color-paper: #fffdf7; /* カード */
   --color-sumi: #22252b; /* 文字・ヘッダー（墨） */
   --color-ai: #1f3a63; /* 道場生・主ボタン（藍） */
+  --color-ai-deep: #14284a; /* 主ボタンの厚み（藍を濃く） */
   --color-shu: #b8322a; /* 朱印・注意（朱） */
   --color-wakatake: #3f7a4a; /* 保護者（若竹） */
   --color-line: #d9cfb8; /* 罫線 */

@@ -120,7 +120,7 @@ export function VoiceInput({ onText, onInterim, onListeningChange, disabled }: P
         onClick={listening ? stop : start}
         disabled={supported === null || disabled}
         aria-pressed={listening}
-        className={`w-full rounded border-2 py-2.5 font-bold ${
+        className={`w-full rounded-xl border-2 py-2.5 font-bold ${
           listening ? "border-shu bg-shu text-white" : "border-sumi bg-paper"
         } disabled:opacity-50`}
       >

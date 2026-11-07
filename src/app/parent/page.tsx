@@ -1,7 +1,7 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { UkeIllustration } from "@/components/illustrations/UkeIllustration";
-import { Card, Hanko, PageTitle } from "@/components/ui";
+import { Card, PageTitle } from "@/components/ui";
 import { getGuardianLetter } from "@/lib/queries/guardian-letter";
 
 // デモの主役（架空の道場生）の保護者
@@ -12,7 +12,7 @@ export default function ParentPage() {
     <div className="space-y-4">
       <div>
         <PageTitle>今週のお便り</PageTitle>
-        <p className="text-xs text-muted">アントラージュ（選手を支える人）へ</p>
+        <p className="text-xs text-muted">選手を支える人へ</p>
       </div>
       <Suspense
         fallback={
@@ -49,19 +49,16 @@ async function Letter() {
   return (
     <div className="space-y-4">
       <Card tone="parent" className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm">
-            <span className="font-bold">{studentName}</span>の{m}月{d}日の稽古
-          </p>
-          <Hanko size={44}>先生</Hanko>
-        </div>
+        <p className="text-sm">
+          <span className="font-bold">{studentName}</span>の{m}月{d}日の稽古
+        </p>
         {g.coachWords && (
           <blockquote className="font-mincho border-l-4 border-wakatake pl-3 text-lg leading-relaxed">
             {g.coachWords}
           </blockquote>
         )}
         {approved && (
-          <p className="text-xs text-muted">{approved}に先生が確認しました。</p>
+          <p className="inline-block rounded-md bg-kinari px-2 py-1 text-xs font-bold text-muted">{approved}に先生が確認しました</p>
         )}
       </Card>
 

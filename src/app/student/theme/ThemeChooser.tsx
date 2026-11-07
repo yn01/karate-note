@@ -87,7 +87,7 @@ export function ThemeChooser({ reviewId, candidates, chosen }: Props) {
           }}
           rows={2}
           maxLength={LIMITS.theme}
-          className="w-full rounded border border-line bg-paper p-2 text-lg"
+          className="w-full rounded-lg border border-line bg-paper p-2 text-lg"
         />
         <p className="text-xs text-muted">
           <F>

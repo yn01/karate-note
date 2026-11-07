@@ -76,7 +76,7 @@ export function GoalEditor({ initial }: { initial: string[] }) {
               }
               maxLength={GOAL_LIMITS.length}
               aria-label={`目標 ${i + 1}`}
-              className="w-full rounded border border-line bg-paper p-2"
+              className="w-full rounded-lg border border-line bg-paper p-2"
             />
           ))}
           {draft.length < GOAL_LIMITS.count && (

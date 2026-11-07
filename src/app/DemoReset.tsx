@@ -24,7 +24,7 @@ export function DemoReset() {
   };
 
   return (
-    <section aria-labelledby="reset" className="space-y-3 border border-dashed border-line p-4">
+    <section aria-labelledby="reset" className="space-y-3 rounded-2xl border border-dashed border-line p-4">
       <h2 id="reset" className="text-sm font-bold">
         デモを戻す
       </h2>
