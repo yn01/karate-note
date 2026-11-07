@@ -5,8 +5,8 @@ import { buttonClass } from "@/components/ui";
 import { resetDemo } from "./actions";
 
 const MODES = {
-  start: { label: "最初から", text: "11月1日のノートを取りこむ前。ノートの取り込みから承認まで、流れを一から試せます。" },
-  done: { label: "一周したあと", text: "11月1日のノート・問いかけ・1対1・先生の承認まで済んだ状態。お便りや次のテーマがすぐ見られます。" },
+  start: { label: "最初から", text: "11月1日のノートを取りこむ前。ノートの取り込みから、先生がお便りを送るまで、流れを一から試せます。" },
+  done: { label: "一周したあと", text: "11月1日のノート・問いかけ・1対1・先生がお便りを送るまで済んだ状態。お便りや次のテーマがすぐ見られます。" },
 } as const;
 
 // ログインがないデモなので、だれでも承認や上書きができる。触ったあとに戻せるようにする
@@ -29,7 +29,7 @@ export function DemoReset() {
         デモを戻す
       </h2>
       <p className="text-xs leading-relaxed text-muted">
-        ログインのないデモなので、だれでも承認や上書きができます。触ったあとは、ここで戻せます（架空のデータを入れ直します）。
+        ログインのないデモなので、だれでもお便りを送ったり、上書きしたりできます。触ったあとは、ここで戻せます（架空のデータを入れ直します）。
       </p>
       {(Object.keys(MODES) as (keyof typeof MODES)[]).map((m) => (
         <div key={m} className="space-y-1">

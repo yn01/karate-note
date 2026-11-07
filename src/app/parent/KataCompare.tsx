@@ -171,7 +171,7 @@ export function KataCompare({ katas, suggestedStep }: { katas: KataOption[]; sug
               見本の写真で見比べる
             </button>
           )}
-          <p className="text-xs text-muted">写真は Claude に送って見比べるだけで、保存しません。</p>
+          <p className="text-xs text-muted">写真はアプリで見比べるだけで、保存しません。</p>
         </>
       )}
 

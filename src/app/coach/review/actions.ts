@@ -270,7 +270,7 @@ export async function approveReview(noteIdIn: unknown, finalIn: unknown, confirm
   if (!noteId || !parsed.success) return { ok: false, message: "内容を確かめてください" };
   const final = await knownStep(clampDraft(parsed.data));
   if (!final.guardianLetter.coachWords && final.themeCandidates.length === 0) {
-    return { ok: false, message: "お便りか次回テーマを書いてから承認してください" };
+    return { ok: false, message: "お便りか次のテーマを書いてから送ってください" };
   }
 
   if (confirmed !== true) {
@@ -281,16 +281,16 @@ export async function approveReview(noteIdIn: unknown, finalIn: unknown, confirm
       .limit(1);
     const checkedThis = saved?.checkHash === hashDraft(final);
     if (!saved?.checkResult || !saved.checkHash) {
-      return { ok: false, needsConfirm: true, message: "まだ点検していません（または点検できませんでした）。このまま承認しますか？" };
+      return { ok: false, needsConfirm: true, message: "まだ再点検していません（または再点検できませんでした）。このまま送りますか？" };
     }
     if (!checkedThis) {
-      return { ok: false, needsConfirm: true, message: "点検のあとに内容を直しています。もう一度点検せずに承認しますか？" };
+      return { ok: false, needsConfirm: true, message: "再点検のあとに内容を直しています。もう一度再点検せずに送りますか？" };
     }
     if (saved.checkResult.issues.length > 0) {
       return {
         ok: false,
         needsConfirm: true,
-        message: `点検の指摘が${saved.checkResult.issues.length}件あります。確かめたうえで承認しますか？`,
+        message: `再点検の指摘が${saved.checkResult.issues.length}件あります。確かめたうえで送りますか？`,
       };
     }
   }

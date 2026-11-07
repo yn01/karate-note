@@ -37,7 +37,7 @@ export function CriteriaEditor({ criteria }: Props) {
   return (
     <Card tone="coach" aria-labelledby="criteria" className="space-y-3">
       <SectionTitle id="criteria">到達基準のチェック（平安二段）</SectionTitle>
-      <p className="text-xs text-muted">先生が付けます。Claude は判定しません。道場生・保護者には段階は見せません。</p>
+      <p className="text-xs text-muted">先生が付けます。アプリは判定しません。道場生・保護者には段階は見せません。</p>
       {criteria.map((c) => (
         <label key={c.key} className="flex items-center justify-between gap-3 text-sm">
           <span className="min-w-0 flex-1">{c.label}</span>

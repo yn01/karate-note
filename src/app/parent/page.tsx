@@ -2,13 +2,15 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { Card, PageTitle } from "@/components/ui";
 import { kataOptions } from "@/lib/kata";
-import { getGuardianLetter } from "@/lib/queries/guardian-letter";
+import { DateSelect } from "@/components/DateSelect";
+import { dateParam } from "@/lib/date-param";
+import { getGuardianLetter, listLetterDates } from "@/lib/queries/guardian-letter";
 import { KataCompare } from "./KataCompare";
 
 // デモの主役（架空の道場生）の保護者
 const DEMO_STUDENT = "takuya";
 
-export default function ParentPage() {
+export default function ParentPage({ searchParams }: PageProps<"/parent">) {
   return (
     <div className="space-y-4">
       <div>
@@ -20,15 +22,20 @@ export default function ParentPage() {
           <p className="py-10 text-center text-sm text-muted">読み込み中…</p>
         }
       >
-        <Letter />
+        <Letter searchParams={searchParams} />
       </Suspense>
     </div>
   );
 }
 
-async function Letter() {
+async function Letter({ searchParams }: { searchParams: PageProps<"/parent">["searchParams"] }) {
   await connection();
-  const [data, katas] = await Promise.all([getGuardianLetter(DEMO_STUDENT), kataOptions()]);
+  const date = dateParam((await searchParams).date);
+  const [data, katas, dates] = await Promise.all([
+    getGuardianLetter(DEMO_STUDENT, date).then((l) => l ?? (date ? getGuardianLetter(DEMO_STUDENT) : null)),
+    kataOptions(),
+    listLetterDates(DEMO_STUDENT),
+  ]);
   if (!data) {
     return (
       <div className="space-y-4">
@@ -57,6 +64,7 @@ async function Letter() {
 
   return (
     <div className="space-y-4">
+      <DateSelect dates={dates} current={noteDate} label="お便りの日" />
       <Card tone="parent" className="space-y-3">
         <p className="text-sm">
           <span className="font-bold">{studentName}</span>の{m}月{d}日の稽古
@@ -67,7 +75,7 @@ async function Letter() {
           </blockquote>
         )}
         {approved && (
-          <p className="inline-block rounded-md bg-kinari px-2 py-1 text-xs font-bold text-muted">{approved}に先生が確認しました</p>
+          <p className="inline-block rounded-md bg-kinari px-2 py-1 text-xs font-bold text-muted">{approved}に先生が送りました</p>
         )}
       </Card>
 

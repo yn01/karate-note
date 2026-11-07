@@ -7,6 +7,9 @@ import { hashDraft } from "@/lib/draft-hash";
 import { stripFurigana } from "@/lib/furigana";
 import { loadKataKnowledge } from "@/lib/kata";
 import { getCoachReview } from "@/lib/queries/coach-review";
+import { listNoteDates } from "@/lib/queries/latest-note";
+import { DateSelect } from "@/components/DateSelect";
+import { dateParam } from "@/lib/date-param";
 import demoInputs from "../../../../data/seed/demo-inputs.json";
 import { CriteriaEditor } from "./CriteriaEditor";
 import { DraftEditor } from "./DraftEditor";
@@ -17,7 +20,7 @@ export const maxDuration = 200;
 
 const DEMO_STUDENT = "takuya";
 
-export default function CoachReviewPage() {
+export default function CoachReviewPage({ searchParams }: PageProps<"/coach/review">) {
   return (
     <div className="space-y-4">
       <Link href="/coach" className="text-sm text-muted underline">
@@ -25,21 +28,27 @@ export default function CoachReviewPage() {
       </Link>
       <PageTitle>ノートの確認</PageTitle>
       <Suspense fallback={<p className="py-10 text-center text-sm text-muted">読み込み中…</p>}>
-        <Review />
+        <Review searchParams={searchParams} />
       </Suspense>
     </div>
   );
 }
 
-async function Review() {
+async function Review({ searchParams }: { searchParams: PageProps<"/coach/review">["searchParams"] }) {
   await connection();
-  const [data, kata] = await Promise.all([getCoachReview(DEMO_STUDENT), loadKataKnowledge("heian-nidan")]);
+  const date = dateParam((await searchParams).date);
+  const [data, kata, dates] = await Promise.all([
+    getCoachReview(DEMO_STUDENT, date).then((r) => r ?? (date ? getCoachReview(DEMO_STUDENT) : null)),
+    loadKataKnowledge("heian-nidan"),
+    listNoteDates(DEMO_STUDENT),
+  ]);
   if (!data) return <Card tone="coach">まだノートがありません。</Card>;
   const { note, oneOnOne, road, plan, criteria, review, questioningSummary } = data;
   const [, m, d] = note.date.split("-").map(Number);
 
   return (
     <div className="space-y-4">
+      <DateSelect dates={dates} current={note.date} label="ノートの日" />
       <Card tone="coach" aria-label="道場生のノート" className="text-sm">
         <p className="font-bold">
           {note.name}
@@ -52,7 +61,9 @@ async function Review() {
           <Row label="問いかけのまとめ" value={questioningSummary} />
         </dl>
       </Card>
+      {/* 日付を切り替えたら作り直す（前の日の下書き・文字起こしを残さない） */}
       <OneOnOneEditor
+        key={note.date}
         date={note.date}
         sampleTranscript={demoInputs.oneOnOne.transcript}
         saved={
@@ -85,7 +96,7 @@ async function Review() {
               <Row label="今期の重点" value={plan.focus} />
               <Row label="強み" value={plan.strengths.join("／")} />
             </dl>
-            <p className="pt-1 text-xs font-bold text-muted">マイルストーン（SMART）</p>
+            <p className="pt-1 text-xs font-bold text-muted">マイルストーン</p>
             <ul className="space-y-1">
               {plan.milestones.map((m) => (
                 <li key={m.dueLabel}>
@@ -102,6 +113,7 @@ async function Review() {
       <CriteriaEditor criteria={criteria} />
 
       <DraftEditor
+        key={note.id}
         noteId={note.id}
         steps={(kata?.steps ?? []).map((s) => ({ no: s.no, label: `${s.stance}・${s.technique}` }))}
         criteria={criteria}

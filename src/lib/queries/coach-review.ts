@@ -14,8 +14,8 @@ import {
 } from "@/db";
 import { CRITERIA_POINTS, KATA } from "@/lib/criteria";
 
-// 先生の画面7：道場生の最新のノートと、その日の1対1のことば・育成計画・到達基準・下書き（先生だけが見る）
-export async function getCoachReview(slug: string) {
+// 先生の画面7：道場生のノート（date があればその日、なければ最新）と、その日の1対1のことば・育成計画・到達基準・下書き（先生だけが見る）
+export async function getCoachReview(slug: string, date?: string) {
   const db = getDb();
   const [note] = await db
     .select({
@@ -31,7 +31,7 @@ export async function getCoachReview(slug: string) {
     })
     .from(notes)
     .innerJoin(students, eq(notes.studentId, students.id))
-    .where(eq(students.slug, slug))
+    .where(date ? and(eq(students.slug, slug), eq(notes.date, date)) : eq(students.slug, slug))
     .orderBy(desc(notes.date), desc(notes.id))
     .limit(1);
   if (!note) return null;

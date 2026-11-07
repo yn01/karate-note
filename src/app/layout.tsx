@@ -39,7 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {`try{if(localStorage.getItem("karate-note:furigana")==="off")document.documentElement.dataset.furigana="off"}catch(e){}`}
         </Script>
         <header className="sticky top-0 z-10 bg-sumi text-white">
-          <p className="bg-kinari py-1 text-center text-xs font-bold text-muted">架空のデータです（デモ）</p>
+          <p className="bg-kinari py-1 text-center text-xs font-bold text-muted">デモ用の架空のデータです</p>
           <Suspense fallback={<RoleSwitcherFallback />}>
             <RoleSwitcher />
           </Suspense>

@@ -174,7 +174,7 @@ export function OneOnOneEditor({ date, sampleTranscript, saved }: Props) {
       {organized && (
         <div className="space-y-4 border-t border-line pt-4">
           <p className="text-xs text-muted">
-            Claude の整理（下書き）です。先生が確かめて直してから確定してください。道場生・保護者には表示されません。
+            アプリによる整理（下書き）です。先生が確かめて直してから確定してください。道場生・保護者には表示されません。
           </p>
           {fromDemo && !notice && (
             <p className="rounded-lg border border-shu bg-paper p-2 text-sm font-bold text-shu">保存済みのデモ応答です。</p>

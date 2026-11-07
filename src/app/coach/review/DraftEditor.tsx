@@ -53,7 +53,7 @@ export function DraftEditor({ noteId, steps, criteria, saved }: Props) {
           setCheckStale(false);
         }
       } catch {
-        setError("点検できませんでした。もう一度「点検する」を押してください");
+        setError("再点検できませんでした。もう一度「再点検する」を押してください");
       } finally {
         setPhase("idle");
       }
@@ -61,7 +61,7 @@ export function DraftEditor({ noteId, steps, criteria, saved }: Props) {
   };
 
   const create = () => {
-    if (approved && !window.confirm("承認した内容はそのままで、新しい下書きを作ります。画面の内容は新しい下書きに置きかわります。よろしいですか？")) return;
+    if (approved && !window.confirm("送ったお便りはそのままで、新しい下書きを作ります。画面の内容は新しい下書きに置きかわります。よろしいですか？")) return;
     setError(null);
     setNotice(null);
     setPhase("drafting");
@@ -130,7 +130,7 @@ export function DraftEditor({ noteId, steps, criteria, saved }: Props) {
       <Card tone="coach" aria-labelledby="draft" className="space-y-4">
         <SectionTitle id="draft">下書き</SectionTitle>
         <p className="text-xs text-muted">
-          Claude が先生あてに作る下書きです。先生が直して承認したものだけが、保護者と道場生に届きます。
+          アプリが先生あてに作る下書きです。先生が直して「お便りを送る」を押したものだけが、保護者と道場生に届きます。
         </p>
         <button type="button" disabled={busy} onClick={create} className={buttonClass.primary}>
           {phase === "drafting" ? "下書きを作っています…（1〜2分）" : draft ? "下書きを作り直す" : "下書きを作る"}
@@ -191,7 +191,7 @@ export function DraftEditor({ noteId, steps, criteria, saved }: Props) {
                     onChange={(v) => edit((d) => ({ ...d, homePractice: d.homePractice.map((x, j) => (j === i ? { ...x, menu: v } : x)) }))}
                   />
                   <Area
-                    label="この練習の狙い（アウトカム）"
+                    label="この練習の狙い"
                     max={LIMITS.item}
                     value={h.aim}
                     onChange={(v) => edit((d) => ({ ...d, homePractice: d.homePractice.map((x, j) => (j === i ? { ...x, aim: v } : x)) }))}
@@ -248,24 +248,24 @@ export function DraftEditor({ noteId, steps, criteria, saved }: Props) {
 
       {draft && (
         <Card tone="coach" aria-labelledby="check" className="space-y-3">
-          <SectionTitle id="check">点検役の確認</SectionTitle>
-          <p className="text-xs text-muted">下書きとは別の呼び出しで、原則に反していないかを確かめます。直すかどうかは先生が決めます。</p>
+          <SectionTitle id="check">アプリによる再点検</SectionTitle>
+          <p className="text-xs text-muted">下書きとは別に、答えを教えていないか・安全か・伝わることばかなどを確かめます。直すかどうかは先生が決めます。</p>
           <p role="status" className="text-sm">
             {phase === "checking"
-              ? "点検しています…"
+              ? "再点検しています…"
               : check
                 ? check.issues.length === 0
                   ? check.ok
-                    ? "点検しました。指摘はありませんでした。"
-                    : "点検で問題ありとされました（くわしい指摘はありません）。"
-                  : `点検しました。指摘${check.issues.length}件。`
+                    ? "再点検しました。指摘はありませんでした。"
+                    : "再点検で問題ありとされました（くわしい指摘はありません）。"
+                  : `再点検しました。指摘${check.issues.length}件。`
                 : ""}
           </p>
           {check && phase !== "checking" && (
             <div className="space-y-2">
-              {checkFromDemo && <p className="text-sm font-bold text-shu">保存済みのデモ応答です（点検はできていません）。</p>}
+              {checkFromDemo && <p className="text-sm font-bold text-shu">保存済みのデモ応答です（再点検はできていません）。</p>}
               {checkStale && (
-                <p className="rounded-lg border border-shu bg-paper p-2 text-sm text-shu">点検のあとに直しています。直した内容は、まだ点検していません。</p>
+                <p className="rounded-lg border border-shu bg-paper p-2 text-sm text-shu">再点検のあとに直しています。直した内容は、まだ再点検していません。</p>
               )}
               {check.issues.length > 0 && (
                 <ul className="space-y-2">
@@ -281,26 +281,26 @@ export function DraftEditor({ noteId, steps, criteria, saved }: Props) {
             </div>
           )}
           <button type="button" disabled={busy} onClick={() => check_(draft)} className={buttonClass.secondary}>
-            {check ? "直した内容でもう一度点検する" : "点検する"}
+            {check ? "直した内容でもう一度再点検する" : "再点検する"}
           </button>
         </Card>
       )}
 
       {draft && (
         <Card tone="coach" aria-labelledby="approve" className="space-y-3 text-center">
-          <SectionTitle id="approve">承認</SectionTitle>
+          <SectionTitle id="approve">お便りを送る</SectionTitle>
           {approved && !dirty ? (
             <div className="mx-auto max-w-xs -rotate-1 rounded-md bg-kinari px-4 py-3 text-left text-sm shadow-[0_4px_10px_-6px_rgba(60,45,25,0.5)]">
-              <p className="font-bold">承認済み</p>
-              <p>保護者にお便り・自主練・安全の注意が、道場生に次回テーマの候補が届いています。</p>
+              <p className="font-bold">送りました</p>
+              <p>保護者にお便り・自主練・安全の注意が、道場生に次のテーマの候補が届いています。</p>
             </div>
           ) : (
             <p className="text-sm text-muted">
-              {approved ? "承認したあとに直しています。承認し直すと、届く内容が新しくなります。" : "直し終えたら承認してください。"}
+              {approved ? "送ったあとに直しています。送り直すと、届く内容が新しくなります。" : "直し終えたら、保護者と道場生にお便りを送ってください。送るまで、どちらにも届きません。"}
             </p>
           )}
           <button type="button" disabled={busy || (approved && !dirty)} onClick={() => approve()} className={buttonClass.primary}>
-            {phase === "approving" ? "保存しています…" : approved ? (dirty ? "直した内容で承認し直す" : "承認済み") : "直した内容で承認する"}
+            {phase === "approving" ? "送っています…" : approved ? (dirty ? "直した内容で送り直す" : "送りました") : "直した内容でお便りを送る"}
           </button>
         </Card>
       )}
