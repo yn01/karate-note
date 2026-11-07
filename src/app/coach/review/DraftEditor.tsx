@@ -217,12 +217,6 @@ export function DraftEditor({ noteId, criteria, saved }: Props) {
                 value={draft.guardianLetter.effort}
                 onChange={(v) => edit((d) => ({ ...d, guardianLetter: { ...d.guardianLetter, effort: v } }))}
               />
-              <Area
-                label="手本"
-                max={LIMITS.text}
-                value={draft.guardianLetter.model}
-                onChange={(v) => edit((d) => ({ ...d, guardianLetter: { ...d.guardianLetter, model: v } }))}
-              />
             </div>
           </fieldset>
         )}

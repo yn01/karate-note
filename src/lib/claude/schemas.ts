@@ -1,4 +1,4 @@
-// 5場面の出力の形（構造化出力）。DB の jsonb の型もここから作る。
+// 6場面の出力の形（構造化出力）。DB の jsonb の型もここから作る。
 import { z } from "zod";
 
 // 1 ノートの読み取り
@@ -49,7 +49,6 @@ export const draftSchema = z.object({
     watchPoints: z.array(z.string()),
     cheerHints: z.array(z.string()),
     effort: z.string(),
-    model: z.string(),
   }),
 });
 
@@ -65,12 +64,25 @@ export const checkSchema = z.object({
   ),
 });
 
+// 6 形の見比べ（保護者向け）。先生が書いた知見の中から、見比べるところを選ぶだけ。出来の判定はしない
+export const kataCompareSchema = z.object({
+  photoUsable: z
+    .boolean()
+    .describe("練習の写真で、体の形（腕・足・姿勢）が見えるなら true。全身が写っていない・暗い・空手の写真でないなら false"),
+  lookAt: z
+    .array(z.string())
+    .describe("見比べるところ（1〜2つ）。先生の知見の中から選び、手本で何を見るかと、写真のどこを見るかを書く。写真の子どもの形がどうなっているかは書かない"),
+  basis: z.array(z.string()).describe("lookAt と cheer のもとにした先生の知見の ID（入力の <item id=...> のもの）。1〜3つ"),
+  cheer: z.string().describe("声かけのヒント（先生の知見の合言葉や、保護者が見るポイントから）。1文"),
+});
+
 export const sceneSchemas = {
   noteReading: noteReadingSchema,
   oneOnOne: oneOnOneSchema,
   questioning: nextQuestionSchema,
   draft: draftSchema,
   check: checkSchema,
+  kataCompare: kataCompareSchema,
 } as const;
 
 export type NoteReading = z.infer<typeof noteReadingSchema>;
@@ -78,4 +90,5 @@ export type OneOnOneOrganized = z.infer<typeof oneOnOneSchema>;
 export type NextQuestion = z.infer<typeof nextQuestionSchema>;
 export type Draft = z.infer<typeof draftSchema>;
 export type CheckResult = z.infer<typeof checkSchema>;
+export type KataCompare = z.infer<typeof kataCompareSchema>;
 export type SceneOutput = { [K in keyof typeof sceneSchemas]: z.infer<(typeof sceneSchemas)[K]> };

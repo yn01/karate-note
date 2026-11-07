@@ -9,10 +9,9 @@ import { callScene } from "@/lib/claude/call";
 import { NOTE_READING_SYSTEM, noteReadingMessages } from "@/lib/claude/prompts/note-reading";
 import type { NoteReading } from "@/lib/claude/schemas";
 import { checkPastDate, todayInJapan, type DateProblem } from "@/lib/dates";
+import { detectImageType, MAX_IMAGE_BYTES, type ImageType } from "@/lib/images";
 
 const DEMO_STUDENT = "takuya";
-// 送信の上限（next.config の 4mb）より小さくして、こちらのことばで断れるようにする
-const MAX_IMAGE_BYTES = 3.5 * 1024 * 1024;
 const SAMPLE_IMAGE = join(process.cwd(), "public", "samples", "sample-note-11-01.png");
 const MAX_FIELD = 200;
 
@@ -22,8 +21,6 @@ const KIDS_DATE_MESSAGE: Record<DateProblem, string> = {
   future: "まだ{来|き}ていない{日|ひ}は{選|えら}べません",
   tooOld: "1{年|ねん}より{前|まえ}の{日|ひ}は{選|えら}べません",
 };
-
-type ImageType = "image/jpeg" | "image/png" | "image/webp";
 
 export type ReadNoteResult =
   | { ok: true; reading: NoteReading; source: "claude" | "demo" }
@@ -114,17 +111,6 @@ export async function saveNote(formData: FormData): Promise<SaveNoteResult> {
   }
 
   return { ok: true, date };
-}
-
-function detectImageType(b: Buffer): ImageType | null {
-  if (b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg";
-  if (b.length >= 8 && b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
-    return "image/png";
-  }
-  if (b.length >= 12 && b.toString("ascii", 0, 4) === "RIFF" && b.toString("ascii", 8, 12) === "WEBP") {
-    return "image/webp";
-  }
-  return null;
 }
 
 function clean(value: FormDataEntryValue | null, max = MAX_FIELD): string {
