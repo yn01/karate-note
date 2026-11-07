@@ -51,6 +51,9 @@ async function Letter() {
       }).format(new Date(approvedAt))
     : null;
   const g = letter.guardianLetter;
+  // 先生が選んだ挙動（手本の写真がある挙動だけ）。古いお便りには無いことがある
+  const step = katas.find((k) => k.slug === "heian-nidan")?.steps.find((s) => s.no === (g.compareStep ?? 0));
+  const suggested = step?.modelPhoto ? step.no : undefined;
 
   return (
     <div className="space-y-4">
@@ -78,6 +81,11 @@ async function Letter() {
         </Section>
       )}
 
+      {/* 先生が選んだ挙動を、見てほしいところのすぐ下で見比べる（先生の判断・手本・知見がそろう） */}
+      <Section title={suggested ? `手本と見比べる（先生が選んだ挙動：${suggested}挙動目）` : "手本と見比べる"}>
+        <KataCompare katas={katas} suggestedStep={suggested} />
+      </Section>
+
       {g.cheerHints.length > 0 && (
         <Section title="声かけのヒント">
           <ul className="space-y-1">
@@ -93,10 +101,6 @@ async function Letter() {
           <p>{g.effort}</p>
         </Section>
       )}
-
-      <Section title="手本と見比べる">
-        <KataCompare katas={katas} />
-      </Section>
 
       {letter.homePractice.length > 0 && (
         <Section title="家でできる自主練">

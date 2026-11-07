@@ -39,7 +39,7 @@ describe("問い合わせの仕分け", () => {
 
 describe("承認前のものを道場生・保護者に届けない", () => {
   it("下書き・点検の結果・先生だけが見る項目を読まない", () => {
-    const forbidden = ["coachReviews.draft", "checkResult", "checkHash", "criteriaMatch", "planRevision", "draftUpdatedAt"];
+    const forbidden = ["coachReviews.draft", "checkResult", "checkHash", "criteriaMatch", "planRevision", "draftUpdatedAt", "oneOnOnes.transcript", "oneOnOnes.organized"];
     for (const f of audienceFiles) {
       const src = read(f);
       for (const word of forbidden) expect(src.includes(word), `${f} に ${word}`).toBe(false);

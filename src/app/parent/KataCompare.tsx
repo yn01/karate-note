@@ -18,10 +18,10 @@ type Shown = {
   fromDemo: boolean;
 };
 
-export function KataCompare({ katas }: { katas: KataOption[] }) {
+export function KataCompare({ katas, suggestedStep }: { katas: KataOption[]; suggestedStep?: number }) {
   const [kataSlug, setKataSlug] = useState(katas[0]?.slug ?? "");
   const kata = katas.find((k) => k.slug === kataSlug) ?? katas[0];
-  const [stepNo, setStepNo] = useState(kata?.steps[0]?.no ?? 1);
+  const [stepNo, setStepNo] = useState(suggestedStep ?? kata?.steps[0]?.no ?? 1);
   const step = kata?.steps.find((s) => s.no === stepNo);
   const [shown, setShown] = useState<Shown | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +87,9 @@ export function KataCompare({ katas }: { katas: KataOption[] }) {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted">
-        家で練習している形を撮ると、先生の手本と並べて、見比べるところをお伝えします（先生が書いた知見から選びます）。
+        {suggestedStep
+          ? "先生が、今週見てほしい挙動を選んでいます。家で練習しているところを撮ると、先生の手本と並べて、見比べるところをお伝えします（先生が書いた知見から選びます）。"
+          : "家で練習している形を撮ると、先生の手本と並べて、見比べるところをお伝えします（先生が書いた知見から選びます）。"}
       </p>
       <div className="grid grid-cols-[1fr_auto] gap-2">
         <label className="space-y-1 text-sm">
@@ -125,6 +127,7 @@ export function KataCompare({ katas }: { katas: KataOption[] }) {
             {kata.steps.map((s) => (
               <option key={s.no} value={s.no}>
                 {s.no}
+                {s.no === suggestedStep ? "（先生）" : ""}
               </option>
             ))}
           </select>

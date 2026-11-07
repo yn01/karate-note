@@ -2,9 +2,10 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { Card, PageTitle, SectionTitle } from "@/components/ui";
-import { draftSchema } from "@/lib/claude/schemas";
+import { draftSchema, fillDraftDefaults } from "@/lib/claude/schemas";
 import { hashDraft } from "@/lib/draft-hash";
 import { stripFurigana } from "@/lib/furigana";
+import { loadKataKnowledge } from "@/lib/kata";
 import { getCoachReview } from "@/lib/queries/coach-review";
 import demoInputs from "../../../../data/seed/demo-inputs.json";
 import { CriteriaEditor } from "./CriteriaEditor";
@@ -32,7 +33,7 @@ export default function CoachReviewPage() {
 
 async function Review() {
   await connection();
-  const data = await getCoachReview(DEMO_STUDENT);
+  const [data, kata] = await Promise.all([getCoachReview(DEMO_STUDENT), loadKataKnowledge("heian-nidan")]);
   if (!data) return <Card tone="coach">まだノートがありません。</Card>;
   const { note, oneOnOne, road, plan, criteria, review, questioningSummary } = data;
   const [, m, d] = note.date.split("-").map(Number);
@@ -102,6 +103,7 @@ async function Review() {
 
       <DraftEditor
         noteId={note.id}
+        steps={(kata?.steps ?? []).map((s) => ({ no: s.no, label: `${s.stance}・${s.technique}` }))}
         criteria={criteria}
         saved={reviewProps(review)}
       />
@@ -118,7 +120,7 @@ function reviewProps(review: NonNullable<Awaited<ReturnType<typeof getCoachRevie
   const raw = (newer ? review.draft : (review.final ?? review.draft)) ?? null;
   if (!raw) return null;
   // 古い下書きに残った項目（手本 model など）を捨ててから使う（点検・承認のハッシュとそろえる）
-  const parsed = draftSchema.safeParse(raw);
+  const parsed = draftSchema.safeParse(fillDraftDefaults(raw));
   const base = parsed.success ? parsed.data : raw;
   const hash = hashDraft(base);
   return {

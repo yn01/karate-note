@@ -49,6 +49,10 @@ export const draftSchema = z.object({
     watchPoints: z.array(z.string()),
     cheerHints: z.array(z.string()),
     effort: z.string(),
+    compareStep: z
+      .number()
+      .int()
+      .describe("保護者に、先生の手本と見比べてほしい挙動の番号（形の知見の「各挙動のポイント」の表の番号）。watchPoints に合う挙動がなければ 0"),
   }),
 });
 
@@ -92,3 +96,12 @@ export type Draft = z.infer<typeof draftSchema>;
 export type CheckResult = z.infer<typeof checkSchema>;
 export type KataCompare = z.infer<typeof kataCompareSchema>;
 export type SceneOutput = { [K in keyof typeof sceneSchemas]: z.infer<(typeof sceneSchemas)[K]> };
+
+// 古い下書き・承認済みの内容（項目を足す前に保存したもの）を、いまの形にそろえてから確かめる。
+// 足りない項目は「なし」で補う（見比べてほしい挙動 compareStep は 0）
+export function fillDraftDefaults(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object") return raw;
+  const d = raw as { guardianLetter?: unknown };
+  if (!d.guardianLetter || typeof d.guardianLetter !== "object") return raw;
+  return { ...d, guardianLetter: { compareStep: 0, ...(d.guardianLetter as object) } };
+}

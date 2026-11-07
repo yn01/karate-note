@@ -8,7 +8,8 @@ import { coachReviews, criteriaChecks, getDb, notes, oneOnOnes, students, type O
 import { buildReviewContext } from "@/lib/claude/context/review";
 import { checkMessages, checkSystem } from "@/lib/claude/prompts/check";
 import { draftMessages, draftSystem } from "@/lib/claude/prompts/draft";
-import { draftSchema, type CheckResult, type Draft } from "@/lib/claude/schemas";
+import { loadKataKnowledge } from "@/lib/kata";
+import { draftSchema, fillDraftDefaults, type CheckResult, type Draft } from "@/lib/claude/schemas";
 import { CRITERIA_POINTS, KATA, type CriteriaStatus } from "@/lib/criteria";
 import { hashDraft } from "@/lib/draft-hash";
 import { LIMITS } from "@/lib/review-fields";
@@ -205,7 +206,7 @@ export async function generateDraft(noteIdIn: unknown): Promise<DraftResult> {
     // 作れなかったときは保存しない（前の下書きと点検を消さない）。画面には空の下書きを出して、先生が手で書ける
     return { ok: true, draft: emptyDraft(), source: result.source, usable: false };
   }
-  const draft = clampDraft(result.data);
+  const draft = await knownStep(clampDraft(result.data));
   try {
     await getDb()
       .insert(coachReviews)
@@ -229,9 +230,9 @@ export type CheckRunResult =
 // 先生が画面で直している途中の下書きを点検する。点検した内容のハッシュを残し、承認のときに同じかを確かめる
 export async function runCheck(noteIdIn: unknown, draftIn: unknown): Promise<CheckRunResult> {
   const noteId = await ownNoteId(noteIdIn);
-  const parsed = draftSchema.safeParse(draftIn);
+  const parsed = draftSchema.safeParse(fillDraftDefaults(draftIn));
   if (!noteId || !parsed.success) return { ok: false, message: "もう一度下書きを作ってください" };
-  const draft = clampDraft(parsed.data);
+  const draft = await knownStep(clampDraft(parsed.data));
   const hash = hashDraft(draft);
 
   // 同じ内容をもう点検していれば、その結果を返す（費用と上限を守る）
@@ -265,9 +266,9 @@ export type ApproveResult =
 // 点検していない・点検のあとに直した・指摘が残っているときは、止めずに先生に確かめる（決めるのは先生）
 export async function approveReview(noteIdIn: unknown, finalIn: unknown, confirmed: unknown): Promise<ApproveResult> {
   const noteId = await ownNoteId(noteIdIn);
-  const parsed = draftSchema.safeParse(finalIn);
+  const parsed = draftSchema.safeParse(fillDraftDefaults(finalIn));
   if (!noteId || !parsed.success) return { ok: false, message: "内容を確かめてください" };
-  const final = clampDraft(parsed.data);
+  const final = await knownStep(clampDraft(parsed.data));
   if (!final.guardianLetter.coachWords && final.themeCandidates.length === 0) {
     return { ok: false, message: "お便りか次回テーマを書いてから承認してください" };
   }
@@ -346,6 +347,7 @@ function clampDraft(d: Draft): Draft {
       watchPoints: list(d.guardianLetter.watchPoints, LIMITS.letterList, LIMITS.item),
       cheerHints: list(d.guardianLetter.cheerHints, LIMITS.letterList, LIMITS.item),
       effort: str(d.guardianLetter.effort, LIMITS.text),
+      compareStep: stepNo(d.guardianLetter.compareStep),
     },
   };
 }
@@ -359,6 +361,19 @@ function emptyDraft(): Draft {
     homePractice: [],
     safety: [],
     planRevision: "",
-    guardianLetter: { coachWords: "", watchPoints: [], cheerHints: [], effort: "" },
+    guardianLetter: { coachWords: "", watchPoints: [], cheerHints: [], effort: "", compareStep: 0 },
   };
+}
+
+// 見比べてほしい挙動の番号（0＝なし）。整数でなければ 0
+function stepNo(v: unknown): number {
+  return typeof v === "number" && Number.isInteger(v) && v >= 1 ? v : 0;
+}
+
+// 平安二段の知見にない挙動の番号は 0（なし）にする（先生の画面の選択肢と、保存する値をそろえる）
+async function knownStep(d: Draft): Promise<Draft> {
+  const n = d.guardianLetter.compareStep;
+  if (n === 0) return d;
+  const kata = await loadKataKnowledge("heian-nidan");
+  return kata?.steps.some((s) => s.no === n) ? d : { ...d, guardianLetter: { ...d.guardianLetter, compareStep: 0 } };
 }

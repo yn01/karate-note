@@ -57,7 +57,7 @@ async function Question() {
           <Row label="{直|なお}したいこと" value={note.improve} />
         </dl>
       </Card>
-      <QuestionFlow noteId={note.id} savedSummary={note.summary} />
+      <QuestionFlow noteId={note.id} savedSummary={note.summary} fromCoach={note.fromCoach} />
     </div>
   );
 }

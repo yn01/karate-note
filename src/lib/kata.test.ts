@@ -77,3 +77,11 @@ describe("形の見比べ（場面6）の原則", () => {
     expect(basisIsValid(d, items)).toBe(true);
   });
 });
+
+describe("お便りの「見てほしいところ」から見比べへ", () => {
+  it("デモの下書きで先生が選んだ挙動は、知見の挙動にある", () => {
+    const step = demo.draft.guardianLetter.compareStep;
+    expect(step).toBeGreaterThan(0);
+    expect(k.steps.some((s) => s.no === step)).toBe(true);
+  });
+});

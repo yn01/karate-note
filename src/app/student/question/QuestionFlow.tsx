@@ -4,16 +4,17 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { buttonClass, Card, Hanko } from "@/components/ui";
 import { F } from "@/components/ui/Furigana";
+import { VoiceInput } from "@/components/voice/VoiceInput";
 import type { NextQuestion } from "@/lib/claude/schemas";
 import { stripFurigana } from "@/lib/furigana";
 import { askNext, saveQuestioning, type SignedTurn } from "./actions";
 
-type Props = { noteId: number; savedSummary: string | null };
+type Props = { noteId: number; savedSummary: string | null; fromCoach: boolean };
 
 type Phase = "start" | "asking" | "answering" | "summary" | "saved";
 
 // 画面3：オープン しつもん → えらんで こたえる しつもん（クローズド）→ まとめ
-export function QuestionFlow({ noteId, savedSummary }: Props) {
+export function QuestionFlow({ noteId, savedSummary, fromCoach }: Props) {
   const [phase, setPhase] = useState<Phase>("start");
   const [turns, setTurns] = useState<SignedTurn[]>([]);
   const [current, setCurrent] = useState<NextQuestion | null>(null);
@@ -120,8 +121,13 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
               {savedSummary}
             </p>
           )}
+          {fromCoach && !fromDemo && (
+            <p className="rounded-lg bg-ai/5 px-3 py-2 text-sm font-bold text-ai">
+              <F>{"{先生|せんせい}と{話|はな}したことをもとにした{質問|しつもん}だよ"}</F>
+            </p>
+          )}
           <p className="text-sm text-muted">
-            <F>{"{今日|きょう}の{稽古|けいこ}をいっしょにふりかえろう。{質問|しつもん}は3つまでです。"}</F>
+            <F>{"{今日|きょう}の{稽古|けいこ}をいっしょにふりかえろう。{質問|しつもん}は3つまでです。{答|こた}えは、{声|こえ}で{言|い}ってもいいよ。{答|こた}えは{先生|せんせい}も{読|よ}むよ。"}</F>
           </p>
           <button type="button" onClick={() => ask([])} className={buttonClass.primary}>
             はじめる
@@ -194,9 +200,25 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
               }}
               className="space-y-2"
             >
+              {/* 声は文字にするだけで、このアプリには送らない・残さない。ラベルの外に置く（ラベルを押して始まらないように） */}
+              <VoiceInput
+                disabled={pending}
+                onText={(t) => setDraft((cur) => (cur ? `${cur}${t}` : t).slice(0, 200))}
+                startLabel={<F>{"{声|こえ}で{答|こた}える"}</F>}
+                stopLabel={<F>{"とめる（{聞|き}いています…）"}</F>}
+                texts={{
+                  listening: <F>{"{聞|き}いているよ"}</F>,
+                  failed: <F>{"うまく{始|はじ}められなかったよ。もう{一度|いちど}{押|お}してね"}</F>,
+                  stopped: <F>{"{声|こえ}の{入力|にゅうりょく}が{止|と}まったよ"}</F>,
+                  unsupported: <F>{"ここでは{声|こえ}で{答|こた}えられないよ。キーボードのマイクを{使|つか}ってね"}</F>,
+                  "not-allowed": <F>{"マイクが{使|つか}えないよ。おうちの{人|ひと}に{聞|き}いてね"}</F>,
+                  "service-not-allowed": <F>{"マイクが{使|つか}えないよ。おうちの{人|ひと}に{聞|き}いてね"}</F>,
+                  "no-speech": <F>{"{声|こえ}が{聞|き}こえなかったよ。もう{一度|いちど}{話|はな}してね"}</F>,
+                }}
+              />
               <label className="block space-y-1">
                 <span className="text-sm font-bold text-muted">
-                  <F>{"{答|こた}え（マイクのボタンで{話|はな}してもいいよ）"}</F>
+                  <F>{"{答|こた}え（{声|こえ}で{言|い}ってもいいよ）"}</F>
                 </span>
                 <textarea
                   name="answer"
@@ -254,8 +276,8 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
             </p>
           </div>
           <p className="text-sm">{summary}</p>
-          <p className="text-xs text-muted">
-            <F>{"{先生|せんせい}が{読|よ}んで、{次|つぎ}のテーマをいっしょに{考|かんが}えます。"}</F>
+          <p className="rounded-lg bg-ai/5 px-3 py-2 font-bold text-ai">
+            <F>{"このふりかえりは、{先生|せんせい}にとどくよ。{次|つぎ}の{稽古|けいこ}で、{先生|せんせい}と{話|はな}そう。"}</F>
           </p>
           <Link href="/student" className="block text-sm text-muted underline">
             <F>{"ホームに{戻|もど}る"}</F>

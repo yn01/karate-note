@@ -11,6 +11,7 @@ import { approveReview, generateDraft, runCheck } from "./actions";
 
 type Props = {
   noteId: number;
+  steps: { no: number; label: string }[]; // 見比べてほしい挙動の選択肢（平安二段の各挙動）
   criteria: { key: string; status: CriteriaStatus | null }[];
   saved: {
     base: Draft; // 編集の出発点（承認のあとに作り直した下書きがあれば、そちら）
@@ -24,7 +25,7 @@ type Props = {
 type LetterListKey = "watchPoints" | "cheerHints";
 
 // 画面7：下書き（場面4）→ 点検（場面5）→ 先生が直して承認
-export function DraftEditor({ noteId, criteria, saved }: Props) {
+export function DraftEditor({ noteId, steps, criteria, saved }: Props) {
   const [draft, setDraft] = useState<Draft | null>(saved?.base ?? null);
   const [check, setCheck] = useState<CheckResult | null>(saved?.check ?? null);
   const [checkStale, setCheckStale] = useState(saved ? !saved.checkCurrent : false); // 点検のあとに直したか
@@ -217,6 +218,29 @@ export function DraftEditor({ noteId, criteria, saved }: Props) {
                 value={draft.guardianLetter.effort}
                 onChange={(v) => edit((d) => ({ ...d, guardianLetter: { ...d.guardianLetter, effort: v } }))}
               />
+              <div className="space-y-1">
+              <label className="block space-y-1">
+                <span className="text-sm font-bold">手本と見比べてほしい挙動（平安二段）</span>
+                <select
+                  aria-describedby="compare-step-help"
+                  value={draft.guardianLetter.compareStep ?? 0}
+                  onChange={(e) =>
+                    edit((d) => ({ ...d, guardianLetter: { ...d.guardianLetter, compareStep: Number(e.target.value) } }))
+                  }
+                  className="w-full rounded-lg border border-line bg-paper p-2 text-sm"
+                >
+                  <option value={0}>なし</option>
+                  {steps.map((s) => (
+                    <option key={s.no} value={s.no}>
+                      {s.no}挙動目：{s.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p id="compare-step-help" className="text-xs text-muted">
+                保護者のお便りで「今週見てほしいところ」のすぐ下に、この挙動の手本と見比べる欄が出ます。
+              </p>
+              </div>
             </div>
           </fieldset>
         )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 // ブラウザの音声入力（Web Speech API、ja-JP）。このアプリには文字だけが渡り、音声は届かない・保存しない。
 // 文字にする処理はブラウザ・OS の音声認識が行う（Chrome は Google、Safari は Apple のサーバーを使うことがある）。
@@ -27,27 +27,39 @@ function getCtor(): RecognitionCtor | null {
 // スマホは連続の聞き取りで確定文が重なることがあるので、話し終えるたびに区切る
 const isMobile = () => typeof navigator !== "undefined" && /iPhone|iPad|Android/i.test(navigator.userAgent);
 
-const ERRORS: Record<string, string> = {
+// 案内とエラーの文（道場生の画面では texts で、ふりがな付きの文に差し替える）
+const MESSAGES = {
+  listening: "聞き取っています",
+  failed: "音声入力を始められませんでした。もう一度押してください",
+  stopped: "音声入力が止まりました",
+  unsupported: "このブラウザでは音声入力が使えません。iPhone のキーボードのマイクで入力してください。",
   "not-allowed": "マイクの使用が許可されていません",
   "service-not-allowed": "マイクの使用が許可されていません（音声入力の設定を確かめてください）",
   "no-speech": "声が聞こえませんでした。もう一度話してください",
-};
+} as const;
+type MessageKey = keyof typeof MESSAGES;
+const ERROR_KEYS: MessageKey[] = ["not-allowed", "service-not-allowed", "no-speech"];
 
 type Props = {
   onText: (finalText: string) => void; // 確定した文を足す
   onInterim?: (text: string) => void; // 話している途中の文
   onListeningChange?: (listening: boolean) => void;
   disabled?: boolean;
+  startLabel?: ReactNode; // ボタンの文字（道場生の画面では、ふりがな付きにする）
+  stopLabel?: ReactNode;
+  // 案内とエラーの文（道場生の画面では、ふりがな付きにする）
+  texts?: Partial<Record<MessageKey, ReactNode>>;
 };
 
-export function VoiceInput({ onText, onInterim, onListeningChange, disabled }: Props) {
+export function VoiceInput({ onText, onInterim, onListeningChange, disabled, startLabel, stopLabel, texts = {} }: Props) {
   const [supported, setSupported] = useState<boolean | null>(null);
   const [listening, setListeningState] = useState(false);
   const setListening = (v: boolean) => {
     setListeningState(v);
     onListeningChange?.(v);
   };
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<MessageKey | "">("");
+  const say = (k: MessageKey) => texts[k] ?? MESSAGES[k];
   const rec = useRef<Recognition | null>(null);
 
   useEffect(() => {
@@ -86,7 +98,7 @@ export function VoiceInput({ onText, onInterim, onListeningChange, disabled }: P
       }
       onInterim?.(interim);
     };
-    r.onerror = (e) => setMessage(ERRORS[e.error] ?? "音声入力が止まりました");
+    r.onerror = (e) => setMessage(ERROR_KEYS.find((k) => k === e.error) ?? "stopped");
     r.onend = () => {
       // 確定しないまま止まった文も残す
       if (interim) onText(interim);
@@ -98,9 +110,9 @@ export function VoiceInput({ onText, onInterim, onListeningChange, disabled }: P
     try {
       r.start();
       setListening(true);
-      setMessage("聞き取っています");
+      setMessage("listening");
     } catch {
-      setMessage("音声入力を始められませんでした。もう一度押してください");
+      setMessage("failed");
     }
   };
 
@@ -108,9 +120,7 @@ export function VoiceInput({ onText, onInterim, onListeningChange, disabled }: P
 
   if (supported === false) {
     return (
-      <p className="text-xs text-muted">
-        このブラウザでは音声入力が使えません。iPhone のキーボードのマイクで入力してください。
-      </p>
+      <p className="text-xs text-muted">{say("unsupported")}</p>
     );
   }
   return (
@@ -125,10 +135,10 @@ export function VoiceInput({ onText, onInterim, onListeningChange, disabled }: P
         } disabled:opacity-50`}
       >
         <span aria-hidden="true">{listening ? "■ " : "● "}</span>
-        {listening ? "止める（話しています…）" : "話して入力"}
+        {listening ? (stopLabel ?? "止める（話しています…）") : (startLabel ?? "話して入力")}
       </button>
       <p role="status" className={`text-xs ${message && !listening ? "text-shu" : "text-muted"}`}>
-        {message}
+        {message ? say(message) : ""}
       </p>
     </div>
   );
