@@ -48,7 +48,7 @@ export function CriteriaEditor({ criteria }: Props) {
               setSaved(false);
               setValues((v) => ({ ...v, [c.key]: e.target.value as CriteriaStatus | "" }));
             }}
-            className="shrink-0 rounded border border-line bg-paper p-2"
+            className="shrink-0 rounded-lg border border-line bg-paper p-2"
           >
             <option value="">（未）</option>
             {(Object.keys(CRITERIA_STATUS_LABEL) as CriteriaStatus[]).map((s) => (

@@ -40,7 +40,7 @@ async function List() {
               <div className="flex items-center gap-2">
                 <span
                   aria-hidden
-                  className="h-2.5 w-10 shrink-0 border border-black/15"
+                  className="h-2.5 w-10 shrink-0 rounded-full border border-black/15"
                   style={{ backgroundColor: beltHex(s.belt?.color ?? null) }}
                 />
                 <p className="min-w-0 flex-1 font-bold">

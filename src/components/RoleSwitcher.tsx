@@ -31,7 +31,7 @@ function RoleLinks({ pathname }: { pathname: string | null }) {
             key={r.href}
             href={r.href}
             aria-current={active ? "page" : undefined}
-            className={`rounded py-1.5 text-center text-sm font-bold transition-colors ${
+            className={`rounded-full py-1.5 text-center text-sm font-bold transition-colors ${
               active ? r.active : "text-white/75 hover:bg-white/10"
             }`}
           >

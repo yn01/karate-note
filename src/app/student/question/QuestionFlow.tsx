@@ -102,12 +102,12 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
         {phase === "asking" ? "考えています" : phase === "saved" ? "保存しました" : ""}
       </p>
       {fromDemo && (
-        <p className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
+        <p className="rounded-lg border border-shu bg-paper p-3 text-sm font-bold text-shu">
           <F>{"いまは{見本|みほん}の{質問|しつもん}です。"}</F>
         </p>
       )}
       {error && (
-        <p role="alert" className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
+        <p role="alert" className="rounded-lg border border-shu bg-paper p-3 text-sm font-bold text-shu">
           <F>{error}</F>
         </p>
       )}
@@ -115,7 +115,7 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
       {phase === "start" && (
         <div className="space-y-3">
           {savedSummary && (
-            <p className="border border-line bg-paper p-3 text-sm">
+            <p className="rounded-lg border border-line bg-paper p-3 text-sm">
               <F>{"{前|まえ}に{決|き}めたこと："}</F>
               {savedSummary}
             </p>
@@ -135,7 +135,7 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
             t.role === "claude" ? (
               <li
                 key={i}
-                className="mr-8 border border-line border-l-4 border-l-ai bg-paper p-4"
+                className="mr-8 rounded-2xl rounded-tl-sm border border-line border-l-4 border-l-ai bg-paper p-4 shadow-[0_4px_12px_-8px_rgba(60,45,25,0.35)]"
                 aria-live={i === turns.length - 1 ? "polite" : undefined}
               >
                 <p className="text-xs font-bold text-muted">
@@ -150,7 +150,7 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
                 </p>
               </li>
             ) : (
-              <li key={i} className="ml-8 bg-ai p-4 text-white">
+              <li key={i} className="ml-8 rounded-2xl rounded-tr-sm bg-ai p-4 text-white">
                 <p className="text-lg">{t.text}</p>
               </li>
             ),
@@ -175,7 +175,7 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
                     type="button"
                     disabled={pending}
                     onClick={() => answer(stripFurigana(c))}
-                    className="rounded border-2 border-sumi bg-paper px-4 py-3 text-left text-lg font-bold disabled:opacity-50"
+                    className="rounded-xl border-2 border-ai/60 bg-paper px-4 py-3 text-left text-lg font-bold shadow-[0_3px_0_rgba(31,58,99,0.25)] transition active:translate-y-[2px] active:shadow-none disabled:opacity-50"
                   >
                     <F>{c}</F>
                   </button>
@@ -206,7 +206,7 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
                   rows={2}
                   maxLength={200}
                   required
-                  className="w-full rounded border border-line bg-paper p-3 text-lg"
+                  className="w-full rounded-lg border border-line bg-paper p-3 text-lg"
                 />
               </label>
               <button type="submit" disabled={pending} className={buttonClass.primary}>
@@ -233,7 +233,7 @@ export function QuestionFlow({ noteId, savedSummary }: Props) {
               onChange={(e) => setSummary(e.target.value)}
               rows={3}
               maxLength={200}
-              className="w-full rounded border border-line bg-paper p-3 text-lg"
+              className="w-full rounded-lg border border-line bg-paper p-3 text-lg"
             />
           </label>
           <button type="button" disabled={pending || !summary.trim()} onClick={save} className={buttonClass.primary}>

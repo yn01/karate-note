@@ -141,7 +141,7 @@ export function OneOnOneEditor({ date, sampleTranscript, saved }: Props) {
           disabled={pending}
           rows={5}
           aria-describedby="interim-status"
-          className={`w-full rounded border bg-paper p-3 ${listening ? "border-shu" : "border-line"}`}
+          className={`w-full rounded-lg border bg-paper p-3 ${listening ? "border-shu" : "border-line"}`}
         />
       </label>
       <div className="flex items-center justify-between text-xs text-muted">
@@ -157,12 +157,12 @@ export function OneOnOneEditor({ date, sampleTranscript, saved }: Props) {
       </p>
 
       {error && (
-        <p role="alert" className="border border-shu bg-paper p-3 text-sm font-bold text-shu">
+        <p role="alert" className="rounded-lg border border-shu bg-paper p-3 text-sm font-bold text-shu">
           {error}
         </p>
       )}
       {notice && (
-        <p role="status" className="border border-line bg-paper p-3 text-sm">
+        <p role="status" className="rounded-lg border border-line bg-paper p-3 text-sm">
           {notice}
         </p>
       )}
@@ -177,10 +177,10 @@ export function OneOnOneEditor({ date, sampleTranscript, saved }: Props) {
             Claude の整理（下書き）です。先生が確かめて直してから確定してください。道場生・保護者には表示されません。
           </p>
           {fromDemo && !notice && (
-            <p className="border border-shu bg-paper p-2 text-sm font-bold text-shu">保存済みのデモ応答です。</p>
+            <p className="rounded-lg border border-shu bg-paper p-2 text-sm font-bold text-shu">保存済みのデモ応答です。</p>
           )}
           {changedSinceOrganize && (
-            <p className="border border-shu bg-paper p-2 text-sm text-shu">
+            <p className="rounded-lg border border-shu bg-paper p-2 text-sm text-shu">
               文字起こしが変わりました。もう一度整理してください。
             </p>
           )}
@@ -196,7 +196,7 @@ export function OneOnOneEditor({ date, sampleTranscript, saved }: Props) {
                     onChange={(e) => update((o) => ({ ...o, [key]: o[key].map((x, j) => (j === i ? e.target.value : x)) }))}
                     maxLength={100}
                     aria-label={`${label} ${i + 1}`}
-                    className="min-w-0 flex-1 rounded border border-line bg-paper p-2 text-sm"
+                    className="min-w-0 flex-1 rounded-lg border border-line bg-paper p-2 text-sm"
                   />
                   <button
                     type="button"

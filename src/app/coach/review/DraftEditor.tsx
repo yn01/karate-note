@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { buttonClass, Card, Hanko, SectionTitle } from "@/components/ui";
+import { buttonClass, Card, SectionTitle } from "@/components/ui";
 import type { CheckResult, Draft } from "@/lib/claude/schemas";
 import { CRITERIA_STATUS_LABEL, type CriteriaStatus } from "@/lib/criteria";
 import { LIMITS } from "@/lib/review-fields";
@@ -134,10 +134,10 @@ export function DraftEditor({ noteId, criteria, saved }: Props) {
         <button type="button" disabled={busy} onClick={create} className={buttonClass.primary}>
           {phase === "drafting" ? "下書きを作っています…（1〜2分）" : draft ? "下書きを作り直す" : "下書きを作る"}
         </button>
-        {error && <p role="alert" className="border border-shu bg-paper p-3 text-sm font-bold text-shu">{error}</p>}
-        {notice && <p role="status" className="border border-line bg-paper p-3 text-sm">{notice}</p>}
+        {error && <p role="alert" className="rounded-lg border border-shu bg-paper p-3 text-sm font-bold text-shu">{error}</p>}
+        {notice && <p role="status" className="rounded-lg border border-line bg-paper p-3 text-sm">{notice}</p>}
         {draftFromDemo && !notice && (
-          <p className="border border-shu bg-paper p-2 text-sm font-bold text-shu">保存済みのデモ応答です。</p>
+          <p className="rounded-lg border border-shu bg-paper p-2 text-sm font-bold text-shu">保存済みのデモ応答です。</p>
         )}
 
         {draft && (
@@ -163,7 +163,7 @@ export function DraftEditor({ noteId, criteria, saved }: Props) {
                     rows={2}
                     maxLength={LIMITS.text}
                     aria-label={`${c.pointLabel}の照らし合わせ`}
-                    className="w-full rounded border border-line bg-paper p-2 text-sm"
+                    className="w-full rounded-lg border border-line bg-paper p-2 text-sm"
                   />
                 </div>
               ))}
@@ -247,7 +247,7 @@ export function DraftEditor({ noteId, criteria, saved }: Props) {
             <div className="space-y-2">
               {checkFromDemo && <p className="text-sm font-bold text-shu">保存済みのデモ応答です（点検はできていません）。</p>}
               {checkStale && (
-                <p className="border border-shu bg-paper p-2 text-sm text-shu">点検のあとに直しています。直した内容は、まだ点検していません。</p>
+                <p className="rounded-lg border border-shu bg-paper p-2 text-sm text-shu">点検のあとに直しています。直した内容は、まだ点検していません。</p>
               )}
               {check.issues.length > 0 && (
                 <ul className="space-y-2">
@@ -272,9 +272,9 @@ export function DraftEditor({ noteId, criteria, saved }: Props) {
         <Card tone="coach" aria-labelledby="approve" className="space-y-3 text-center">
           <SectionTitle id="approve">承認</SectionTitle>
           {approved && !dirty ? (
-            <div className="flex items-center justify-center gap-3">
-              <Hanko size={52}>承認</Hanko>
-              <p className="text-sm">承認しました。保護者にお便り・自主練・安全の注意が、道場生に次回テーマの候補が届きます。</p>
+            <div className="mx-auto max-w-xs -rotate-1 rounded-md bg-kinari px-4 py-3 text-left text-sm shadow-[0_4px_10px_-6px_rgba(60,45,25,0.5)]">
+              <p className="font-bold">承認済み</p>
+              <p>保護者にお便り・自主練・安全の注意が、道場生に次回テーマの候補が届いています。</p>
             </div>
           ) : (
             <p className="text-sm text-muted">
@@ -303,7 +303,7 @@ function Area({ label, value, onChange, max = LIMITS.text }: { label: string; va
         onChange={(e) => onChange(e.target.value)}
         rows={2}
         maxLength={max}
-        className="w-full rounded border border-line bg-paper p-2 text-sm"
+        className="w-full rounded-lg border border-line bg-paper p-2 text-sm"
       />
     </label>
   );
@@ -336,7 +336,7 @@ function List({
             onChange={(e) => onChange(items.map((y, j) => (j === i ? e.target.value : y)))}
             maxLength={maxLength}
             aria-label={`${label} ${i + 1}`}
-            className="min-w-0 flex-1 rounded border border-line bg-paper p-2 text-sm"
+            className="min-w-0 flex-1 rounded-lg border border-line bg-paper p-2 text-sm"
           />
           <button type="button" onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label={`${label} ${i + 1} を消す`} className="px-2 text-muted">
             ×

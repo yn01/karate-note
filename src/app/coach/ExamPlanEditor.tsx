@@ -77,7 +77,7 @@ export function ExamPlanEditor({ slug, name, months, targets, current }: Props) 
             value={month}
             onChange={(e) => setMonth(e.target.value)}
             disabled={pending}
-            className="rounded border border-line bg-paper p-1.5"
+            className="rounded-lg border border-line bg-paper p-1.5"
           >
             <option value="">未定</option>
             {months.map((m) => (
@@ -93,7 +93,7 @@ export function ExamPlanEditor({ slug, name, months, targets, current }: Props) 
             value={kyu}
             onChange={(e) => setKyu(Number(e.target.value))}
             disabled={pending || month === ""}
-            className="rounded border border-line bg-paper p-1.5"
+            className="rounded-lg border border-line bg-paper p-1.5"
           >
             {targets.map((t) => (
               <option key={t.kyu} value={t.kyu}>
