@@ -19,7 +19,7 @@ export default function ThemePage() {
         <FuriganaToggle />
       </div>
       <Suspense
-        fallback={<Loading kids />}
+        fallback={<Loading />}
       >
         <Choice />
       </Suspense>

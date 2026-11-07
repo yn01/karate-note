@@ -1,6 +1,6 @@
 // 読み込み中の表示：縦書きの「空手ノート」を、書き順どおりに一画ずつ筆で書くように描き、くり返す。
 // 書き終えたら少し置いて一斉に消える。動きを減らす設定のときは、書き終えた形で止める。
-// 道場生の画面（kids）では「よみこみちゅう」とひらがなで出す。
+// どの画面も同じ見た目（文字は出さず、読み上げだけ「読み込み中」）。
 // 一画ずつの線は、このアプリのために手で描いた中心線（100×100 のます目。縦に5字並べる）
 
 // 1字ずつの画（書き順どおり）
@@ -41,7 +41,7 @@ const css =
     .join("") +
   "@media (prefers-reduced-motion: reduce){.kn-stroke{animation:none!important;stroke-dashoffset:0!important}}";
 
-export function Loading({ kids = false }: { kids?: boolean }) {
+export function Loading() {
   let k = 0;
   return (
     <div role="status" className="flex flex-col items-center gap-3 py-8">
@@ -70,7 +70,7 @@ export function Loading({ kids = false }: { kids?: boolean }) {
           </g>
         ))}
       </svg>
-      <p className="text-xs text-muted">{kids ? "よみこみちゅう" : "読み込み中"}</p>
+      <p className="sr-only">読み込み中</p>
     </div>
   );
 }

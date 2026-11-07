@@ -15,7 +15,7 @@ const DEMO_STUDENT = "takuya";
 
 export default function StudentHomePage() {
   return (
-    <Suspense fallback={<Loading kids />}>
+    <Suspense fallback={<Loading />}>
       <StudentHome />
     </Suspense>
   );

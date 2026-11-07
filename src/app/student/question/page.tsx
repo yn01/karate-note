@@ -28,7 +28,7 @@ export default function QuestionPage({ searchParams }: PageProps<"/student/quest
       <PageTitle>
         <F>{"ふりかえりの{質問|しつもん}"}</F>
       </PageTitle>
-      <Suspense fallback={<Loading kids />}>
+      <Suspense fallback={<Loading />}>
         <Question searchParams={searchParams} />
       </Suspense>
     </div>
