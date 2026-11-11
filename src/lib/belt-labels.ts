@@ -45,7 +45,7 @@ export function beltHex(color: string | null): string {
   return (color && colorHex[color]) || "#e5e7eb";
 }
 
-// "2027-02-28" → "2027{年|ねん}2{月|がつ}"
+// "2027-04-30" → "2027{年|ねん}4{月|がつ}"
 export function kidsMonth(isoDate: string): string {
   const [y, m] = isoDate.split("-").map(Number);
   return `${y}{年|ねん}${m}{月|がつ}`;

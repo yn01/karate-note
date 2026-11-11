@@ -1,4 +1,4 @@
-// 審査の回（年4回：5・8・11・2月）。先生が審査予定を選ぶときの選択肢
+// 審査の回（年2回：4・10月）。先生が審査予定を選ぶときの選択肢
 import belts from "../../data/seed/belts.json";
 
 export const EXAM_MONTHS: number[] = belts.examMonths;
@@ -18,7 +18,7 @@ export function upcomingExamMonths(today: string, count = 6): string[] {
   return out;
 }
 
-// "2027-02-01" → "2027年2月"
+// "2027-04-01" → "2027年4月"
 export function examMonthLabel(month: string): string {
   const [y, m] = month.split("-").map(Number);
   return `${y}年${m}月`;

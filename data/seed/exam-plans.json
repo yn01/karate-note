@@ -1,4 +1,4 @@
 {
-  "source": "先生が決めた審査予定（架空）。たくやくんは plan.md のマイルストーン②（2027年2月の審査で9級）に合わせる。ほかの道場生は未定",
-  "plans": [{ "studentSlug": "takuya", "examMonth": "2027-02-01", "targetKyu": 9 }]
+  "source": "先生が決めた審査予定（架空）。たくやくんは plan.md のマイルストーン②（2027年4月の審査で9級）に合わせる。ほかの道場生は未定",
+  "plans": [{ "studentSlug": "takuya", "examMonth": "2027-04-01", "targetKyu": 9 }]
 }

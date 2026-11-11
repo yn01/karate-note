@@ -1,6 +1,6 @@
 {
-  "source": "一般的な昇級の流れを参考にした架空の科目表（期間前に作成した資料をもとに入力）。流派名は出さない",
-  "examMonths": [5, 8, 11, 2],
+  "source": "一般的な昇級の流れを参考にした架空の科目表",
+  "examMonths": [4, 10],
   "start": { "kyu": null, "color": "白色", "name": "白帯（無級）", "note": "入会時。最初の審査を受けると10級（水色帯）になる" },
   "belts": [
     { "kyu": 10, "color": "水色", "kata": "十二の一", "kataFile": "skills/kata/juni-no-ichi.md", "kumite": "無し", "kihon": "その場基本", "eligibility": "入会後3ヶ月以上" },
