@@ -108,7 +108,7 @@ export async function hasModelPhoto(slug: string, step: number): Promise<boolean
   );
 }
 
-// デモの「練習の写真」（作者が、よくあるつまずきをまねて撮ったもの）。平安二段の1挙動目だけ
+// デモの「練習の写真」（公開版ではプレイスホルダー）。平安二段の1挙動目だけ
 export const PRACTICE_SAMPLE = { slug: "heian-nidan", step: 1, path: "/samples/practice-heian-nidan-01.jpg" } as const;
 
 // 保護者の画面に渡す形と挙動の一覧（先生が書いた挙動のポイントと、手本の写真の有無）
